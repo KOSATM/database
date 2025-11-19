@@ -27,7 +27,7 @@ CREATE TABLE users (
     last_login_at TIMESTAMPTZ,
     name VARCHAR(50),
     email VARCHAR(1000),
-    profile_image VARCHAR(1000),
+    profile_image_url VARCHAR(1000),
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ,
     nationality VARCHAR(50)
@@ -35,7 +35,7 @@ CREATE TABLE users (
 
 CREATE TABLE travel_plan_snapshot (
     id BIGSERIAL NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     version_no INT NOT NULL,
     snapshot_json JSON NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -43,7 +43,7 @@ CREATE TABLE travel_plan_snapshot (
 
 CREATE TABLE travel_plans (
     id BIGSERIAL NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     start_date TIMESTAMPTZ,
     end_date TIMESTAMPTZ,
     timezone VARCHAR(20) DEFAULT 'KST',
@@ -99,8 +99,8 @@ CREATE TABLE photo_groups (
 CREATE TABLE photos (
     id BIGSERIAL NOT NULL,
     file_url TEXT NOT NULL,
-    lat NUMERIC(10,6),
-    lng NUMERIC(10,6),
+    lat NUMERIC(10,7),
+    lng NUMERIC(10,7),
     taken_at TIMESTAMPTZ,
     order_index INT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE ai_post_analysis (
     input_json JSONB NOT NULL,
     output_json JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     post_id BIGINT NOT NULL
 );
 
@@ -149,7 +149,7 @@ CREATE TABLE ai_hashtag_recommendation (
 
 CREATE TABLE image_place_searches (
     id BIGSERIAL NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     searched_at TIMESTAMPTZ NOT NULL,
     action_type image_action_type NOT NULL
 );
@@ -176,7 +176,7 @@ CREATE TABLE image_place_search_results (
 
 CREATE TABLE chat_memory (
     id BIGSERIAL NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     agent_id VARCHAR(50) NOT NULL,
     turn_index INT NOT NULL,
     content TEXT NOT NULL,
@@ -187,7 +187,7 @@ CREATE TABLE chat_memory (
 
 CREATE TABLE chat_memory_vector (
     id BIGSERIAL NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     agent_id VARCHAR(50) NOT NULL,
     turn_index INT NOT NULL,
     content TEXT NOT NULL,
@@ -199,7 +199,7 @@ CREATE TABLE chat_memory_vector (
 
 CREATE TABLE checklists (
     id BIGSERIAL NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     day_index BIGINT,
     created_at DATE
 );
@@ -221,12 +221,12 @@ CREATE TABLE sns_tokens (
     account_type TEXT,
     ig_business_id TEXT,
     created_at TIMESTAMPTZ,
-    uid BIGINT NOT NULL
+    user_id BIGINT NOT NULL
 );
 
 CREATE TABLE hotel_bookings (
     id BIGSERIAL NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     external_booking_id VARCHAR(100),
     hotel_id BIGINT NOT NULL,
     room_type_id BIGINT NOT NULL,
@@ -270,7 +270,7 @@ CREATE TABLE payment_transactions (
 
 CREATE TABLE user_identities (
     id BIGSERIAL NOT NULL,
-    uid BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     provider VARCHAR(50),
     created_at TIMESTAMPTZ NOT NULL
 );
@@ -319,34 +319,34 @@ ALTER TABLE toilets ADD PRIMARY KEY (id);
 -- =========================================
 
 ALTER TABLE travel_plan_snapshot
-  ADD CONSTRAINT fk_tps_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_tps_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE travel_plans
-  ADD CONSTRAINT fk_tp_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_tp_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE ai_post_analysis
-  ADD CONSTRAINT fk_apa_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_apa_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE chat_memory
-  ADD CONSTRAINT fk_cm_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_cm_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE chat_memory_vector
-  ADD CONSTRAINT fk_cmv_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_cmv_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE checklists
-  ADD CONSTRAINT fk_cl_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_cl_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE image_place_searches
-  ADD CONSTRAINT fk_ips_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_ips_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE sns_tokens
-  ADD CONSTRAINT fk_sns_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_sns_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE hotel_bookings
-  ADD CONSTRAINT fk_hb_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_hb_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 ALTER TABLE user_identities
-  ADD CONSTRAINT fk_ui_users FOREIGN KEY (uid) REFERENCES users(id);
+  ADD CONSTRAINT fk_ui_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 -- travel hierarchy
 ALTER TABLE travel_days
