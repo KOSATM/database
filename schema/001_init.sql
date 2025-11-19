@@ -18,11 +18,11 @@ CREATE TYPE image_action_type AS ENUM ('SAVE_ONLY', 'EDIT_ITINERARY', 'REPLACE')
 CREATE TYPE checklist_category AS ENUM ('PACKING', 'CLOTHES', 'DOCUMENT', 'ETC');
 
 -- =========================================
--- 3) TABLE 생성 (PK/FK 없음)
+-- 3) TABLE 생성 (PK 이름 전체 id 통일)
 -- =========================================
 
 CREATE TABLE users (
-    uid BIGSERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     is_active BOOLEAN,
     last_login_at TIMESTAMPTZ,
     name VARCHAR(50),
@@ -148,14 +148,14 @@ CREATE TABLE ai_hashtag_recommendation (
 );
 
 CREATE TABLE image_place_searches (
-    image_place_search_id BIGSERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     uid BIGINT NOT NULL,
     searched_at TIMESTAMPTZ NOT NULL,
     action_type image_action_type NOT NULL
 );
 
 CREATE TABLE place (
-    place_id BIGSERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(1000),
     latitude NUMERIC(10,7) NOT NULL,
@@ -167,7 +167,7 @@ CREATE TABLE place (
 );
 
 CREATE TABLE image_place_search_results (
-    image_place_search_result_id BIGSERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     image_search_history_id BIGINT NOT NULL,
     place_id BIGINT NOT NULL,
     is_selected BOOLEAN NOT NULL DEFAULT FALSE,
@@ -198,14 +198,14 @@ CREATE TABLE chat_memory_vector (
 );
 
 CREATE TABLE checklists (
-    checklist_id BIGSERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     uid BIGINT NOT NULL,
     day_index BIGINT,
     created_at DATE
 );
 
 CREATE TABLE checklist_items (
-    checklist_item_id BIGSERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     checklist_id BIGINT NOT NULL,
     content TEXT NOT NULL,
     category checklist_category NOT NULL,
@@ -225,7 +225,7 @@ CREATE TABLE sns_tokens (
 );
 
 CREATE TABLE hotel_bookings (
-    booking_id BIGINT,
+    id BIGSERIAL NOT NULL,
     uid BIGINT NOT NULL,
     external_booking_id VARCHAR(100),
     hotel_id BIGINT NOT NULL,
@@ -253,8 +253,8 @@ CREATE TABLE hotel_bookings (
 );
 
 CREATE TABLE payment_transactions (
-    payment_id BIGINT,
-    booking_id BIGINT,
+    id BIGSERIAL NOT NULL,
+    booking_id BIGINT NOT NULL,
     payment_method VARCHAR(30) NOT NULL,
     provider_payment_id VARCHAR(100),
     amount NUMERIC(12,2) NOT NULL,
@@ -269,14 +269,14 @@ CREATE TABLE payment_transactions (
 );
 
 CREATE TABLE user_identities (
-    identity_id BIGSERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     uid BIGINT NOT NULL,
     provider VARCHAR(50),
     created_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE toilets (
-    toilet_id BIGSERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     name VARCHAR(255) NOT NULL,
     latitude NUMERIC(10,7) NOT NULL,
     longitude NUMERIC(10,7) NOT NULL,
@@ -287,12 +287,12 @@ CREATE TABLE toilets (
 -- 4) PRIMARY KEY
 -- =========================================
 
-ALTER TABLE users ADD PRIMARY KEY (uid);
-ALTER TABLE travel_plan_snapshot ADD PRIMARY KEY (id, uid);
+ALTER TABLE users ADD PRIMARY KEY (id);
+ALTER TABLE travel_plan_snapshot ADD PRIMARY KEY (id);
 ALTER TABLE travel_plans ADD PRIMARY KEY (id);
 ALTER TABLE travel_days ADD PRIMARY KEY (id);
 ALTER TABLE travel_spot ADD PRIMARY KEY (id);
-ALTER TABLE current_activity ADD PRIMARY KEY (id, travelspot_id);
+ALTER TABLE current_activity ADD PRIMARY KEY (id);
 ALTER TABLE posts ADD PRIMARY KEY (id);
 ALTER TABLE photo_groups ADD PRIMARY KEY (id);
 ALTER TABLE photos ADD PRIMARY KEY (id);
@@ -301,133 +301,99 @@ ALTER TABLE hashtags ADD PRIMARY KEY (id);
 ALTER TABLE ai_post_analysis ADD PRIMARY KEY (id);
 ALTER TABLE ai_style_recommendation ADD PRIMARY KEY (id);
 ALTER TABLE ai_hashtag_recommendation ADD PRIMARY KEY (id);
-ALTER TABLE image_place_searches ADD PRIMARY KEY (image_place_search_id);
-ALTER TABLE place ADD PRIMARY KEY (place_id);
-ALTER TABLE image_place_search_results ADD PRIMARY KEY (image_place_search_result_id);
-ALTER TABLE chat_memory ADD PRIMARY KEY (id, uid);
-ALTER TABLE chat_memory_vector ADD PRIMARY KEY (id, uid);
-ALTER TABLE checklists ADD PRIMARY KEY (checklist_id);
-ALTER TABLE checklist_items ADD PRIMARY KEY (checklist_item_id);
+ALTER TABLE image_place_searches ADD PRIMARY KEY (id);
+ALTER TABLE place ADD PRIMARY KEY (id);
+ALTER TABLE image_place_search_results ADD PRIMARY KEY (id);
+ALTER TABLE chat_memory ADD PRIMARY KEY (id);
+ALTER TABLE chat_memory_vector ADD PRIMARY KEY (id);
+ALTER TABLE checklists ADD PRIMARY KEY (id);
+ALTER TABLE checklist_items ADD PRIMARY KEY (id);
 ALTER TABLE sns_tokens ADD PRIMARY KEY (id);
-ALTER TABLE hotel_bookings ADD PRIMARY KEY (booking_id, uid);
-ALTER TABLE payment_transactions ADD PRIMARY KEY (payment_id, booking_id);
-ALTER TABLE user_identities ADD PRIMARY KEY (identity_id, uid);
-ALTER TABLE toilets ADD PRIMARY KEY (toilet_id);
+ALTER TABLE hotel_bookings ADD PRIMARY KEY (id);
+ALTER TABLE payment_transactions ADD PRIMARY KEY (id);
+ALTER TABLE user_identities ADD PRIMARY KEY (id);
+ALTER TABLE toilets ADD PRIMARY KEY (id);
 
 -- =========================================
--- 5) UNIQUE (booking_id 단독 FK용)
+-- 5) FOREIGN KEY
 -- =========================================
 
-ALTER TABLE hotel_bookings
-  ADD CONSTRAINT uq_booking_id UNIQUE (booking_id);
-
--- =========================================
--- 6) FOREIGN KEY
--- =========================================
-
--- users 기반
 ALTER TABLE travel_plan_snapshot
-  ADD CONSTRAINT fk_tps_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_tps_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE travel_plans
-  ADD CONSTRAINT fk_tp_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_tp_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE ai_post_analysis
-  ADD CONSTRAINT fk_apa_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_apa_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE chat_memory
-  ADD CONSTRAINT fk_cm_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_cm_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE chat_memory_vector
-  ADD CONSTRAINT fk_cmv_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_cmv_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE checklists
-  ADD CONSTRAINT fk_cl_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_cl_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE image_place_searches
-  ADD CONSTRAINT fk_ips_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_ips_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE sns_tokens
-  ADD CONSTRAINT fk_sns_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_sns_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE hotel_bookings
-  ADD CONSTRAINT fk_hb_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_hb_users FOREIGN KEY (uid) REFERENCES users(id);
 
 ALTER TABLE user_identities
-  ADD CONSTRAINT fk_ui_users
-  FOREIGN KEY (uid) REFERENCES users(uid);
+  ADD CONSTRAINT fk_ui_users FOREIGN KEY (uid) REFERENCES users(id);
 
--- travel_plans / days / spots / current_activity
+-- travel hierarchy
 ALTER TABLE travel_days
-  ADD CONSTRAINT fk_td_tp
-  FOREIGN KEY (trip_id) REFERENCES travel_plans(id);
+  ADD CONSTRAINT fk_td_tp FOREIGN KEY (trip_id) REFERENCES travel_plans(id);
 
 ALTER TABLE travel_spot
-  ADD CONSTRAINT fk_ts_td
-  FOREIGN KEY (day_id) REFERENCES travel_days(id);
+  ADD CONSTRAINT fk_ts_td FOREIGN KEY (day_id) REFERENCES travel_days(id);
 
 ALTER TABLE current_activity
-  ADD CONSTRAINT fk_ca_ts
-  FOREIGN KEY (travelspot_id) REFERENCES travel_spot(id);
+  ADD CONSTRAINT fk_ca_ts FOREIGN KEY (travelspot_id) REFERENCES travel_spot(id);
 
--- posts 도메인
+-- posts domain
 ALTER TABLE posts
-  ADD CONSTRAINT fk_posts_tp
-  FOREIGN KEY (plan_id) REFERENCES travel_plans(id);
+  ADD CONSTRAINT fk_posts_tp FOREIGN KEY (plan_id) REFERENCES travel_plans(id);
 
 ALTER TABLE photo_groups
-  ADD CONSTRAINT fk_pg_posts
-  FOREIGN KEY (post_id) REFERENCES posts(id);
+  ADD CONSTRAINT fk_pg_posts FOREIGN KEY (post_id) REFERENCES posts(id);
 
 ALTER TABLE photos
-  ADD CONSTRAINT fk_ph_pg
-  FOREIGN KEY (group_id) REFERENCES photo_groups(id);
+  ADD CONSTRAINT fk_ph_pg FOREIGN KEY (group_id) REFERENCES photo_groups(id);
 
 ALTER TABLE hashtag_groups
-  ADD CONSTRAINT fk_hg_posts
-  FOREIGN KEY (post_id) REFERENCES posts(id);
+  ADD CONSTRAINT fk_hg_posts FOREIGN KEY (post_id) REFERENCES posts(id);
 
 ALTER TABLE hashtags
-  ADD CONSTRAINT fk_ht_hg
-  FOREIGN KEY (group_id) REFERENCES hashtag_groups(id);
+  ADD CONSTRAINT fk_ht_hg FOREIGN KEY (group_id) REFERENCES hashtag_groups(id);
 
 ALTER TABLE ai_post_analysis
-  ADD CONSTRAINT fk_apa_posts
-  FOREIGN KEY (post_id) REFERENCES posts(id);
+  ADD CONSTRAINT fk_apa_posts FOREIGN KEY (post_id) REFERENCES posts(id);
 
 ALTER TABLE ai_style_recommendation
-  ADD CONSTRAINT fk_asr_apa
-  FOREIGN KEY (analysis_id) REFERENCES ai_post_analysis(id);
+  ADD CONSTRAINT fk_asr_apa FOREIGN KEY (analysis_id) REFERENCES ai_post_analysis(id);
 
 ALTER TABLE ai_hashtag_recommendation
-  ADD CONSTRAINT fk_ahr_apa
-  FOREIGN KEY (analysis_id) REFERENCES ai_post_analysis(id);
+  ADD CONSTRAINT fk_ahr_apa FOREIGN KEY (analysis_id) REFERENCES ai_post_analysis(id);
 
--- image search
+-- image place search results
 ALTER TABLE image_place_search_results
-  ADD CONSTRAINT fk_ipsr_ips
-  FOREIGN KEY (image_search_history_id) REFERENCES image_place_searches(image_place_search_id);
+  ADD CONSTRAINT fk_ipsr_ips FOREIGN KEY (image_search_history_id) REFERENCES image_place_searches(id);
 
 ALTER TABLE image_place_search_results
-  ADD CONSTRAINT fk_ipsr_place
-  FOREIGN KEY (place_id) REFERENCES place(place_id);
+  ADD CONSTRAINT fk_ipsr_place FOREIGN KEY (place_id) REFERENCES place(id);
 
 -- booking / payment
 ALTER TABLE payment_transactions
-  ADD CONSTRAINT fk_pt_hb
-  FOREIGN KEY (booking_id) REFERENCES hotel_bookings(booking_id);
+  ADD CONSTRAINT fk_pt_hb FOREIGN KEY (booking_id) REFERENCES hotel_bookings(id);
 
--- checklists/ checklist_items
+-- checklists / items
 ALTER TABLE checklist_items
-  ADD CONSTRAINT fk_checklist_items_checklists
-  FOREIGN KEY (checklist_id) REFERENCES checklists(checklist_id);
-
+  ADD CONSTRAINT fk_ci_cl FOREIGN KEY (checklist_id) REFERENCES checklists(id);
