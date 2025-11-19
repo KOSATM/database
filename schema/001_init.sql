@@ -68,8 +68,8 @@ CREATE TABLE travel_spot (
     end_at_utc TIMESTAMPTZ,
     place_name VARCHAR(64),
     address VARCHAR(200),
-    lat NUMERIC(10,6),
-    lng NUMERIC(10,6),
+    lat NUMERIC(10,7),
+    lng NUMERIC(10,7),
     cost BIGINT
 );
 
@@ -158,8 +158,8 @@ CREATE TABLE place (
     id BIGSERIAL NOT NULL,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(1000),
-    latitude NUMERIC(10,7) NOT NULL,
-    longitude NUMERIC(10,7) NOT NULL,
+    lat NUMERIC(10,7) NOT NULL,
+    lng NUMERIC(10,7) NOT NULL,
     address VARCHAR(500) NOT NULL,
     place_type VARCHAR(500) NOT NULL,
     image_url VARCHAR(1000),
@@ -278,8 +278,8 @@ CREATE TABLE user_identities (
 CREATE TABLE toilets (
     id BIGSERIAL NOT NULL,
     name VARCHAR(255) NOT NULL,
-    latitude NUMERIC(10,7) NOT NULL,
-    longitude NUMERIC(10,7) NOT NULL,
+    lat NUMERIC(10,7) NOT NULL,
+    lng NUMERIC(10,7) NOT NULL,
     address VARCHAR(500) NOT NULL
 );
 
