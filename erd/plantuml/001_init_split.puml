@@ -1,0 +1,276 @@
+@startuml
+!theme plain
+hide circle
+skinparam linetype ortho
+
+title FIND MY SEOUL – Domain ERD (Split by newpage)
+
+' ===========================================================
+' 1) USER / IDENTITY / CHAT MEMORY DOMAIN
+' ===========================================================
+caption User · Identity · Chat Memory Domain
+
+entity users {
+    *id
+    is_active
+    last_login_at
+    name
+    email
+    profile_image_url
+    nationality
+    created_at
+    updated_at
+}
+
+entity sns_tokens {
+    *id
+    user_id
+    access_token
+    refresh_token
+    expires_at
+    account_type
+}
+
+entity user_identities {
+    *id
+    user_id
+    provider
+    created_at
+}
+
+entity chat_memory {
+    *id
+    user_id
+    agent_id
+    turn_index
+    content
+    created_at
+}
+
+entity chat_memory_vector {
+    *id
+    user_id
+    agent_id
+    embedding
+}
+
+users --> sns_tokens : user_id
+users --> user_identities : user_id
+users --> chat_memory : user_id
+users --> chat_memory_vector : user_id
+
+
+' ===========================================================
+newpage
+' ===========================================================
+' 2) TRAVEL PLANNING DOMAIN
+' ===========================================================
+caption Travel Planning Domain
+
+entity users {
+    *id
+}
+
+entity travel_plans {
+    *id
+    user_id
+    start_date
+    end_date
+    timezone
+    created_at
+    updated_at
+    is_ended
+}
+
+entity travel_plan_snapshot {
+    *id
+    user_id
+    version_no
+    snapshot_json
+    created_at
+}
+
+entity travel_days {
+    *id
+    trip_id
+    day_index
+    title
+    date
+}
+
+entity travel_spot {
+    *id
+    day_id
+    title
+    start_at_utc
+    end_at_utc
+    address
+}
+
+entity current_activity {
+    *id
+    travelspot_id
+    actual_cost
+    review
+}
+
+users --> travel_plans : user_id
+users --> travel_plan_snapshot : user_id
+travel_plans --> travel_days : id = trip_id
+travel_days --> travel_spot : id = day_id
+travel_spot --> current_activity : id = travelspot_id
+
+
+' ===========================================================
+newpage
+' ===========================================================
+' 3) TRAVELGRAM / POSTS / PHOTOS / HASHTAGS
+' ===========================================================
+caption Travelgram · Posts · Photo · Hashtag Domain
+
+entity posts {
+    *id
+    caption
+    plan_id
+    style_id
+    created_at
+}
+
+entity photo_groups {
+    *id
+    post_id
+    created_at
+}
+
+entity photos {
+    *id
+    group_id
+    file_url
+    order_index
+    created_at
+}
+
+entity hashtag_groups {
+    *id
+    post_id
+    created_at
+}
+
+entity hashtags {
+    *id
+    group_id
+    name
+    is_selected
+    created_at
+}
+
+posts --> photo_groups : post_id
+photo_groups --> photos : group_id
+
+posts --> hashtag_groups : post_id
+hashtag_groups --> hashtags : group_id
+
+
+' ===========================================================
+newpage
+' ===========================================================
+' 4) AI ANALYSIS (STYLE / HASHTAG RECOMMENDATION)
+' ===========================================================
+caption AI Post Analysis · Style · Hashtag Recommendation
+
+entity ai_post_analysis {
+    *id
+    user_id
+    post_id
+    prompt_text
+    input_json
+    output_json
+    created_at
+}
+
+entity ai_style_recommendation {
+    *id
+    analysis_id
+    name
+    confidence
+    created_at
+}
+
+entity ai_hashtag_recommendation {
+    *id
+    analysis_id
+    name
+    confidence
+    created_at
+}
+
+ai_post_analysis --> ai_style_recommendation : analysis_id
+ai_post_analysis --> ai_hashtag_recommendation : analysis_id
+
+
+' ===========================================================
+newpage
+' ===========================================================
+' 5) IMAGE PLACE SEARCH / GEOLOCATION / PLACE DB
+' ===========================================================
+caption Image Search · Place DB Domain
+
+entity image_place_searches {
+    *id
+    user_id
+    searched_at
+    action_type
+}
+
+entity place {
+    *id
+    name
+    lat
+    lng
+    address
+    place_type
+    image_url
+    thumbnail_url
+}
+
+entity image_place_search_results {
+    *id
+    image_search_history_id
+    place_id
+    rank
+    is_selected
+}
+
+image_place_searches --> image_place_search_results : image_search_history_id
+place --> image_place_search_results : place_id
+
+
+' ===========================================================
+newpage
+' ===========================================================
+' 6) CHECKLIST DOMAIN
+' ===========================================================
+caption Checklist · Checklist Items Domain
+
+entity checklists {
+    *id
+    user_id
+    day_index
+    created_at
+}
+
+entity checklist_items {
+    *id
+    checklist_id
+    content
+    category
+    is_checked
+    created_at
+}
+
+checklists --> checklist_items : checklist_id
+
+
+' ===========================================================
+newpage
+' ====
