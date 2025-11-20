@@ -306,7 +306,7 @@ ALTER TABLE travel_plan_snapshots ADD FOREIGN KEY (user_id) REFERENCES users(id)
 ALTER TABLE travel_plans ADD FOREIGN KEY (user_id) REFERENCES users(id);
 ALTER TABLE travel_days ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plans(id);
 ALTER TABLE travel_places ADD FOREIGN KEY (day_id) REFERENCES travel_days(id);
-ALTER TABLE current_activities ADD FOREIGN KEY (travel_place_id) REFERENCES travel_place(id);
+ALTER TABLE current_activities ADD FOREIGN KEY (travel_place_id) REFERENCES travel_places(id);
 
 -- Review & Posts
 ALTER TABLE review_posts ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plans(id);
