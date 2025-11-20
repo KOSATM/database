@@ -21,7 +21,7 @@ CREATE TYPE checklist_category AS ENUM ('PACKING', 'CLOTHES', 'DOCUMENT', 'ETC')
 -- USERS
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
-    -- is_active BOOLEAN,
+    is_active BOOLEAN,
     last_login_at TIMESTAMPTZ,
     name VARCHAR(50),
     email VARCHAR(1000),
