@@ -1,0 +1,355 @@
+@startuml
+!theme plain
+hide circle
+skinparam linetype ortho
+
+' ============================
+' USERS
+' ============================
+entity users {
+    *id : BIGSERIAL
+    --
+    is_active : BOOLEAN
+    last_login_at : TIMESTAMPTZ
+    name : VARCHAR(50)
+    email : VARCHAR(1000)
+    profile_image_url : VARCHAR(1000)
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+    nationality : VARCHAR(50)
+}
+
+entity travel_plan_snapshot {
+    *id : BIGSERIAL
+    --
+    user_id : BIGINT
+    version_no : INT
+    snapshot_json : JSON
+    created_at : TIMESTAMPTZ
+}
+
+entity travel_plans {
+    *id : BIGSERIAL
+    --
+    user_id : BIGINT
+    start_date : TIMESTAMPTZ
+    end_date : TIMESTAMPTZ
+    timezone : VARCHAR(20)
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+    is_ended : BOOLEAN
+}
+
+entity travel_days {
+    *id : BIGSERIAL
+    --
+    trip_id : BIGINT
+    day_index : SMALLINT
+    title : VARCHAR(50)
+    date : VARCHAR(50)
+}
+
+entity travel_spot {
+    *id : BIGSERIAL
+    --
+    day_id : BIGINT
+    title : VARCHAR(150)
+    start_at_utc : TIMESTAMPTZ
+    end_at_utc : TIMESTAMPTZ
+    place_name : VARCHAR(64)
+    address : VARCHAR(200)
+    lat : NUMERIC
+    lng : NUMERIC
+    cost : BIGINT
+}
+
+entity current_activity {
+    *id : BIGSERIAL
+    --
+    travelspot_id : BIGINT
+    actual_cost : BIGINT
+    review : TEXT
+}
+
+' ============================
+' POSTS
+' ============================
+entity posts {
+    *id : BIGSERIAL
+    --
+    caption : TEXT
+    is_posted : BOOLEAN
+    post_url : TEXT
+    created_at : TIMESTAMPTZ
+    plan_id : BIGINT
+    style_id : BIGINT
+}
+
+entity photo_groups {
+    *id : BIGSERIAL
+    --
+    created_at : TIMESTAMPTZ
+    post_id : BIGINT
+}
+
+entity photos {
+    *id : BIGSERIAL
+    --
+    file_url : TEXT
+    lat : NUMERIC
+    lng : NUMERIC
+    taken_at : TIMESTAMPTZ
+    order_index : INT
+    created_at : TIMESTAMPTZ
+    group_id : BIGINT
+}
+
+entity hashtag_groups {
+    *id : BIGSERIAL
+    --
+    created_at : TIMESTAMPTZ
+    post_id : BIGINT
+}
+
+entity hashtags {
+    *id : BIGSERIAL
+    --
+    name : VARCHAR(100)
+    is_selected : BOOLEAN
+    created_at : TIMESTAMPTZ
+    group_id : BIGINT
+}
+
+' ============================
+' AI ANALYSIS
+' ============================
+entity ai_post_analysis {
+    *id : BIGSERIAL
+    --
+    prompt_text : TEXT
+    input_json : JSONB
+    output_json : JSONB
+    created_at : TIMESTAMPTZ
+    user_id : BIGINT
+    post_id : BIGINT
+}
+
+entity ai_style_recommendation {
+    *id : BIGSERIAL
+    --
+    name : VARCHAR(150)
+    confidence : NUMERIC
+    created_at : TIMESTAMPTZ
+    analysis_id : BIGINT
+}
+
+entity ai_hashtag_recommendation {
+    *id : BIGSERIAL
+    --
+    name : VARCHAR(100)
+    confidence : NUMERIC
+    created_at : TIMESTAMPTZ
+    analysis_id : BIGINT
+}
+
+' ============================
+' IMAGE PLACE SEARCH
+' ============================
+entity image_place_searches {
+    *id : BIGSERIAL
+    --
+    user_id : BIGINT
+    searched_at : TIMESTAMPTZ
+    action_type : ENUM
+}
+
+entity place {
+    *id : BIGSERIAL
+    --
+    name : VARCHAR(255)
+    description : VARCHAR(1000)
+    lat : NUMERIC
+    lng : NUMERIC
+    address : VARCHAR(500)
+    place_type : VARCHAR(500)
+    image_url : VARCHAR(1000)
+    thumbnail_url : VARCHAR(1000)
+}
+
+entity image_place_search_results {
+    *id : BIGSERIAL
+    --
+    image_search_history_id : BIGINT
+    place_id : BIGINT
+    is_selected : BOOLEAN
+    rank : BIGINT
+}
+
+' ============================
+' CHAT MEMORY
+' ============================
+entity chat_memory {
+    *id : BIGSERIAL
+    --
+    user_id : BIGINT
+    agent_id : VARCHAR(50)
+    turn_index : INT
+    content : TEXT
+    token_count : INT
+    created_at : TIMESTAMPTZ
+    role : VARCHAR(10)
+}
+
+entity chat_memory_vector {
+    *id : BIGSERIAL
+    --
+    user_id : BIGINT
+    agent_id : VARCHAR(50)
+    turn_index : INT
+    content : TEXT
+    token_count : INT
+    created_at : TIMESTAMPTZ
+    role : VARCHAR(10)
+    embedding : VECTOR
+}
+
+' ============================
+' CHECKLISTS
+' ============================
+entity checklists {
+    *id : BIGSERIAL
+    --
+    user_id : BIGINT
+    day_index : BIGINT
+    created_at : DATE
+}
+
+entity checklist_items {
+    *id : BIGSERIAL
+    --
+    checklist_id : BIGINT
+    content : TEXT
+    category : ENUM
+    is_checked : BOOLEAN
+    created_at : DATE
+}
+
+' ============================
+' HOTEL BOOKINGS / PAYMENT
+' ============================
+entity hotel_bookings {
+    *id : BIGSERIAL
+    --
+    user_id : BIGINT
+    external_booking_id : VARCHAR
+    hotel_id : BIGINT
+    room_type_id : BIGINT
+    rate_plan_id : BIGINT
+    checkin_date : DATE
+    checkout_date : DATE
+    nights : INTEGER
+    adults_count : INTEGER
+    children_count : INTEGER
+    currency : CHAR(3)
+    total_price : NUMERIC
+    tax_amount : NUMERIC
+    fee_amount : NUMERIC
+    status : VARCHAR
+    payment_status : VARCHAR
+    guest_name : VARCHAR
+    guest_email : VARCHAR
+    guest_phone : VARCHAR
+    provider_booking_meta : JSONB
+    booked_at : TIMESTAMPTZ
+    cancelled_at : TIMESTAMPTZ
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+}
+
+entity payment_transactions {
+    *id : BIGSERIAL
+    --
+    booking_id : BIGINT
+    payment_method : VARCHAR
+    provider_payment_id : VARCHAR
+    amount : NUMERIC
+    currency : CHAR(3)
+    status : VARCHAR
+    requested_at : TIMESTAMPTZ
+    completed_at : TIMESTAMPTZ
+    cancelled_at : TIMESTAMPTZ
+    raw_response : JSONB
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+}
+
+' ============================
+' SNS TOKENS / IDENTITIES
+' ============================
+entity sns_tokens {
+    *id : BIGSERIAL
+    --
+    access_token : TEXT
+    refresh_token : TEXT
+    expires_at : TIMESTAMPTZ
+    account_type : TEXT
+    ig_business_id : TEXT
+    created_at : TIMESTAMPTZ
+    user_id : BIGINT
+}
+
+entity user_identities {
+    *id : BIGSERIAL
+    --
+    user_id : BIGINT
+    provider : VARCHAR(50)
+    created_at : TIMESTAMPTZ
+}
+
+entity toilets {
+    *id : BIGSERIAL
+    --
+    name : VARCHAR(255)
+    lat : NUMERIC
+    lng : NUMERIC
+    address : VARCHAR(500)
+}
+
+' ============================================================
+' RELATIONSHIPS
+' ============================================================
+
+users --> travel_plan_snapshot : user_id
+users --> travel_plans : user_id
+users --> ai_post_analysis : user_id
+users --> chat_memory : user_id
+users --> chat_memory_vector : user_id
+users --> checklists : user_id
+users --> image_place_searches : user_id
+users --> sns_tokens : user_id
+users --> hotel_bookings : user_id
+users --> user_identities : user_id
+
+travel_plans --> travel_days : id = trip_id
+travel_days --> travel_spot : id = day_id
+travel_spot --> current_activity : id = travelspot_id
+
+travel_plans --> posts : id = plan_id
+posts --> photo_groups : id = post_id
+photo_groups --> photos : id = group_id
+
+posts --> hashtag_groups : id = post_id
+hashtag_groups --> hashtags : id = group_id
+
+posts --> ai_post_analysis : id = post_id
+ai_post_analysis --> ai_style_recommendation : id = analysis_id
+ai_post_analysis --> ai_hashtag_recommendation : id = analysis_id
+
+image_place_searches --> image_place_search_results : id = image_search_history_id
+place --> image_place_search_results : id = place_id
+
+hotel_bookings --> payment_transactions : id = booking_id
+
+checklists --> checklist_items : id = checklist_id
+
+@enduml
