@@ -21,7 +21,7 @@ CREATE TYPE checklist_category AS ENUM ('PACKING', 'CLOTHES', 'DOCUMENT', 'ETC')
 -- USERS
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
-    is_active BOOLEAN,
+    -- is_active BOOLEAN,
     last_login_at TIMESTAMPTZ,
     name VARCHAR(50),
     email VARCHAR(1000),
@@ -54,7 +54,7 @@ CREATE TABLE sns_tokens (
 );
 
 -- TRAVEL PLANNING
-CREATE TABLE travel_plan_snapshot (
+CREATE TABLE travel_plan_snapshots (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     version_no INT NOT NULL,
@@ -81,7 +81,7 @@ CREATE TABLE travel_days (
     plan_date DATE
 );
 
-CREATE TABLE travel_place (
+CREATE TABLE travel_places (
     id BIGSERIAL PRIMARY KEY,
     day_id BIGINT NOT NULL,
     title VARCHAR(150) NOT NULL,
@@ -94,7 +94,7 @@ CREATE TABLE travel_place (
     expected_cost DECIMAL(19, 2)
 );
 
-CREATE TABLE current_activity (
+CREATE TABLE current_activities (
     id BIGSERIAL PRIMARY KEY,
     travel_place_id BIGINT NOT NULL,
     actual_cost DECIMAL(19, 2),
@@ -198,7 +198,7 @@ CREATE TABLE image_search_results (
 );
 
 -- CHAT MEMORY / VECTOR MEMORY
-CREATE TABLE chat_memory (
+CREATE TABLE chat_memories (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     agent_id BIGINT NOT NULL,
@@ -209,7 +209,7 @@ CREATE TABLE chat_memory (
     role VARCHAR(10) NOT NULL
 );
 
-CREATE TABLE chat_memory_vector (
+CREATE TABLE chat_memory_vectors (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     agent_id BIGINT NOT NULL,
@@ -302,11 +302,11 @@ ALTER TABLE user_identities ADD FOREIGN KEY (user_id) REFERENCES users(id);
 ALTER TABLE sns_tokens ADD FOREIGN KEY (user_id) REFERENCES users(id);
 
 -- Travel Planning
-ALTER TABLE travel_plan_snapshot ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE travel_plan_snapshots ADD FOREIGN KEY (user_id) REFERENCES users(id);
 ALTER TABLE travel_plans ADD FOREIGN KEY (user_id) REFERENCES users(id);
 ALTER TABLE travel_days ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plans(id);
-ALTER TABLE travel_place ADD FOREIGN KEY (day_id) REFERENCES travel_days(id);
-ALTER TABLE current_activity ADD FOREIGN KEY (travel_place_id) REFERENCES travel_place(id);
+ALTER TABLE travel_places ADD FOREIGN KEY (day_id) REFERENCES travel_days(id);
+ALTER TABLE current_activities ADD FOREIGN KEY (travel_place_id) REFERENCES travel_place(id);
 
 -- Review & Posts
 ALTER TABLE review_posts ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plans(id);
@@ -327,8 +327,8 @@ ALTER TABLE image_search_results ADD FOREIGN KEY (history_id) REFERENCES image_s
 ALTER TABLE image_search_results ADD FOREIGN KEY (place_id) REFERENCES places(id);
 
 -- Chat Memory
-ALTER TABLE chat_memory ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE chat_memory_vector ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE chat_memories ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE chat_memory_vectors ADD FOREIGN KEY (user_id) REFERENCES users(id);
 
 -- Checklist
 ALTER TABLE checklists ADD FOREIGN KEY (user_id) REFERENCES users(id);
