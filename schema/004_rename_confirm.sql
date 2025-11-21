@@ -191,7 +191,7 @@ CREATE TABLE image_search_places(
 
 CREATE TABLE image_search_results (
     id BIGSERIAL PRIMARY KEY,
-    image_search_places_id BIGINT NOT NULL,
+    image_search_place_id BIGINT NOT NULL,
     place_id BIGINT NOT NULL,
     is_selected BOOLEAN NOT NULL DEFAULT FALSE,
     rank BIGINT NOT NULL
@@ -326,7 +326,7 @@ ALTER TABLE ai_review_hashtags ADD FOREIGN KEY (review_analysis_id) REFERENCES a
 
 -- Places & Search
 ALTER TABLE image_search_places ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE image_search_results ADD FOREIGN KEY (image_search_places_id) REFERENCES image_search_places(id);
+ALTER TABLE image_search_results ADD FOREIGN KEY (image_search_place_id) REFERENCES image_search_places(id);
 ALTER TABLE image_search_results ADD FOREIGN KEY (place_id) REFERENCES places(id);
 
 -- Chat Memory
