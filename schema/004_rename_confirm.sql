@@ -315,7 +315,7 @@ ALTER TABLE review_posts ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plan
 ALTER TABLE review_photo_groups ADD FOREIGN KEY (review_post_id) REFERENCES review_posts(id);
 ALTER TABLE review_photos ADD FOREIGN KEY (group_id) REFERENCES review_photo_groups(id);
 ALTER TABLE review_hashtag_groups ADD FOREIGN KEY (review_post_id) REFERENCES review_posts(id);
-ALTER TABLE review_hashtags ADD FOREIGN KEY (group_id) REFERENCES hashtag_groups(id);
+ALTER TABLE review_hashtags ADD FOREIGN KEY (group_id) REFERENCES review_hashtag_groups(id);
 ALTER TABLE review_posts ADD FOREIGN KEY (review_style_id) REFERENCES ai_review_styles(id);
 
 -- AI Analysis
