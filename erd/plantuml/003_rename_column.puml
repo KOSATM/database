@@ -1,0 +1,606 @@
+@startuml
+
+' =========================================
+' SETTINGS
+' =========================================
+!theme plain
+hide circle
+skinparam linetype ortho
+
+' ---------------------------------------------------------
+' PAGE 1: GLOBAL FULL SCHEMA (전체 구조)
+' ---------------------------------------------------------
+title [Global View] Full Database Schema
+
+package "User & Auth" {
+    entity "users" as users {
+        *id : BIGSERIAL <<PK>>
+        --
+        is_active : BOOLEAN
+        last_login_at : TIMESTAMPTZ
+        name : VARCHAR(50)
+        email : VARCHAR(1000)
+        profile_image_url : VARCHAR(1000)
+        created_at : TIMESTAMPTZ
+        updated_at : TIMESTAMPTZ
+    }
+
+    entity "user_identities" as user_identities {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        provider : VARCHAR(50)
+        created_at : TIMESTAMPTZ
+    }
+
+    entity "sns_tokens" as sns_tokens {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        user_access_token : TEXT
+        page_access_token : TEXT
+        expires_at : TIMESTAMPTZ
+        account_type : VARCHAR(50)
+        ig_business_account : VARCHAR(100)
+        creator_account : VARCHAR(100)
+        publish_account : VARCHAR(100)
+    }
+}
+
+package "Travel Planning" {
+    entity "travel_plans" as travel_plans {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        budget : DECIMAL(19,2)
+        start_date : DATE
+        end_date : DATE
+        is_ended : BOOLEAN
+    }
+
+    entity "travel_days" as travel_days {
+        *id : BIGSERIAL <<PK>>
+        --
+        *travel_plan_id : BIGINT <<FK>>
+        day_index : SMALLINT
+        title : VARCHAR(50)
+        plan_date : DATE
+    }
+
+    entity "travel_places" as travel_places {
+        *id : BIGSERIAL <<PK>>
+        --
+        *day_id : BIGINT <<FK>>
+        title : VARCHAR(150)
+        start_at : TIMESTAMPTZ
+        end_at : TIMESTAMPTZ
+        place_name : VARCHAR(64)
+        lat : NUMERIC
+        lng : NUMERIC
+        expected_cost : DECIMAL(19,2)
+    }
+
+    entity "current_activities" as current_activities {
+        *id : BIGSERIAL <<PK>>
+        --
+        *travel_place_id : BIGINT <<FK>>
+        actual_cost : DECIMAL(19,2)
+        memo : TEXT
+        ended_at : TIMESTAMPTZ
+    }
+
+    entity "travel_plan_snapshots" as travel_plan_snapshots {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        version_no : INT
+        snapshot_json : JSON
+    }
+}
+
+package "Reviews & Social" {
+    entity "review_posts" as review_posts {
+        *id : BIGSERIAL <<PK>>
+        --
+        *travel_plan_id : BIGINT <<FK>>
+        style_id : BIGINT
+        content : TEXT
+        is_posted : BOOLEAN
+        review_post_url : TEXT
+    }
+
+    entity "review_photo_groups" as review_photo_groups {
+        *id : BIGSERIAL <<PK>>
+        --
+        *review_post_id : BIGINT <<FK>>
+    }
+
+    entity "review_photos" as review_photos {
+        *id : BIGSERIAL <<PK>>
+        --
+        *group_id : BIGINT <<FK>>
+        file_url : TEXT
+        lat : NUMERIC
+        lng : NUMERIC
+        order_index : INT
+    }
+
+    entity "hashtag_groups" as hashtag_groups {
+        *id : BIGSERIAL <<PK>>
+        --
+        *review_post_id : BIGINT <<FK>>
+    }
+
+    entity "hashtags" as hashtags {
+        *id : BIGSERIAL <<PK>>
+        --
+        *group_id : BIGINT <<FK>>
+        name : VARCHAR(100)
+        is_selected : BOOLEAN
+    }
+}
+
+package "AI Analysis" {
+    entity "ai_review_analysis" as ai_review_analysis {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        *review_post_id : BIGINT <<FK>>
+        prompt_text : TEXT
+        input_json : JSONB
+        output_json : JSONB
+    }
+
+    entity "ai_styles" as ai_styles {
+        *id : BIGSERIAL <<PK>>
+        --
+        *review_analysis_id : BIGINT <<FK>>
+        name : VARCHAR(150)
+    }
+
+    entity "ai_hashtags" as ai_hashtags {
+        *id : BIGSERIAL <<PK>>
+        --
+        *review_analysis_id : BIGINT <<FK>>
+        name : VARCHAR(100)
+    }
+}
+
+package "Search & Places" {
+    entity "places" as places {
+        *id : BIGSERIAL <<PK>>
+        --
+        name : VARCHAR(255)
+        lat : NUMERIC
+        lng : NUMERIC
+        place_type : VARCHAR(500)
+    }
+
+    entity "image_searches" as image_searches {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        action_type : ENUM
+    }
+
+    entity "image_search_results" as image_search_results {
+        *id : BIGSERIAL <<PK>>
+        --
+        *history_id : BIGINT <<FK>>
+        *place_id : BIGINT <<FK>>
+        is_selected : BOOLEAN
+    }
+
+    entity "toilets" as toilets {
+        *id : BIGSERIAL <<PK>>
+        --
+        name : VARCHAR(255)
+        lat : NUMERIC
+        lng : NUMERIC
+    }
+}
+
+package "Checklist" {
+    entity "checklists" as checklists {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        day_index : BIGINT
+    }
+
+    entity "checklist_items" as checklist_items {
+        *id : BIGSERIAL <<PK>>
+        --
+        *checklist_id : BIGINT <<FK>>
+        content : TEXT
+        category : ENUM
+        is_checked : BOOLEAN
+    }
+}
+
+package "Hotels & Payments" {
+    entity "hotel_bookings" as hotel_bookings {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        hotel_id : BIGINT
+        total_price : NUMERIC
+        status : VARCHAR
+        payment_status : VARCHAR
+    }
+
+    entity "payment_transactions" as payment_transactions {
+        *id : BIGSERIAL <<PK>>
+        --
+        *hotel_booking_id : BIGINT <<FK>>
+        amount : NUMERIC
+        status : VARCHAR
+        provider_payment_id : VARCHAR
+    }
+}
+
+package "Chat Memory" {
+    entity "chat_memories" as chat_memories {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        agent_id : BIGINT
+        content : TEXT
+        role : VARCHAR
+    }
+
+    entity "chat_memory_vectors" as chat_memory_vectors {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        agent_id : BIGINT
+        content : TEXT
+        embedding : VECTOR(1536)
+    }
+}
+
+' Global Relationships
+users ||..o{ user_identities
+users ||..o{ sns_tokens
+users ||..o{ travel_plans
+users ||..o{ travel_plan_snapshots
+users ||..o{ ai_review_analysis
+users ||..o{ image_searches
+users ||..o{ checklists
+users ||..o{ hotel_bookings
+users ||..o{ chat_memories
+users ||..o{ chat_memory_vectors
+
+travel_plans ||..o{ travel_days
+travel_plans ||..o{ review_posts
+travel_days ||..o{ travel_places
+travel_places ||..o{ current_activities
+
+review_posts ||..o{ review_photo_groups
+review_posts ||..o{ hashtag_groups
+review_posts ||..o{ ai_review_analysis
+review_photo_groups ||..o{ review_photos
+hashtag_groups ||..o{ hashtags
+
+ai_review_analysis ||..o{ ai_styles
+ai_review_analysis ||..o{ ai_hashtags
+
+image_searches ||..o{ image_search_results
+places ||..o{ image_search_results
+
+checklists ||..o{ checklist_items
+
+hotel_bookings ||..o{ payment_transactions
+
+newpage
+
+' ---------------------------------------------------------
+' PAGE 2: USER & AUTH CLUSTER
+' ---------------------------------------------------------
+title [Cluster] User & Authentication
+
+entity "users" as users {
+    *id : BIGSERIAL <<PK>>
+    --
+    is_active : BOOLEAN
+    last_login_at : TIMESTAMPTZ
+    name : VARCHAR(50)
+    email : VARCHAR(1000)
+    profile_image_url : VARCHAR(1000)
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+}
+
+entity "user_identities" as user_identities {
+    *id : BIGSERIAL <<PK>>
+    --
+    *user_id : BIGINT <<FK>>
+    provider : VARCHAR(50)
+    created_at : TIMESTAMPTZ
+}
+
+entity "sns_tokens" as sns_tokens {
+    *id : BIGSERIAL <<PK>>
+    --
+    *user_id : BIGINT <<FK>>
+    user_access_token : TEXT
+    page_access_token : TEXT
+    expires_at : TIMESTAMPTZ
+    account_type : VARCHAR(50)
+    ig_business_account : VARCHAR(100)
+    creator_account : VARCHAR(100)
+    publish_account : VARCHAR(100)
+}
+
+users ||..o{ user_identities
+users ||..o{ sns_tokens
+
+newpage
+
+' ---------------------------------------------------------
+' PAGE 3: TRAVEL PLANNING CLUSTER
+' ---------------------------------------------------------
+title [Cluster] Travel Planning & Itinerary
+
+entity "travel_plans" as travel_plans {
+    *id : BIGSERIAL <<PK>>
+    --
+    *user_id : BIGINT <<FK>>
+    budget : DECIMAL(19,2)
+    start_date : DATE
+    end_date : DATE
+    is_ended : BOOLEAN
+}
+
+entity "travel_plan_snapshots" as travel_plan_snapshots {
+    *id : BIGSERIAL <<PK>>
+    --
+    *user_id : BIGINT <<FK>>
+    version_no : INT
+    snapshot_json : JSON
+}
+
+entity "travel_days" as travel_days {
+    *id : BIGSERIAL <<PK>>
+    --
+    *travel_plan_id : BIGINT <<FK>>
+    day_index : SMALLINT
+    title : VARCHAR(50)
+    plan_date : DATE
+}
+
+entity "travel_places" as travel_places {
+    *id : BIGSERIAL <<PK>>
+    --
+    *day_id : BIGINT <<FK>>
+    title : VARCHAR(150)
+    start_at : TIMESTAMPTZ
+    end_at : TIMESTAMPTZ
+    place_name : VARCHAR(64)
+    lat : NUMERIC
+    lng : NUMERIC
+    expected_cost : DECIMAL(19,2)
+}
+
+entity "current_activities" as current_activities {
+    *id : BIGSERIAL <<PK>>
+    --
+    *travel_place_id : BIGINT <<FK>>
+    actual_cost : DECIMAL(19,2)
+    memo : TEXT
+    ended_at : TIMESTAMPTZ
+}
+
+travel_plans ||..o{ travel_days
+travel_days ||..o{ travel_places
+travel_places ||..o{ current_activities
+travel_plans -. travel_plan_snapshots : "Version Control"
+
+newpage
+
+' ---------------------------------------------------------
+' PAGE 4: REVIEWS & AI ANALYSIS CLUSTER
+' ---------------------------------------------------------
+title [Cluster] Reviews, Social & AI Analysis
+
+entity "review_posts" as review_posts {
+    *id : BIGSERIAL <<PK>>
+    --
+    *travel_plan_id : BIGINT <<FK>>
+    style_id : BIGINT
+    content : TEXT
+    is_posted : BOOLEAN
+}
+
+entity "review_photo_groups" as review_photo_groups {
+    *id : BIGSERIAL <<PK>>
+    --
+    *review_post_id : BIGINT <<FK>>
+}
+
+entity "review_photos" as review_photos {
+    *id : BIGSERIAL <<PK>>
+    --
+    *group_id : BIGINT <<FK>>
+    file_url : TEXT
+    lat : NUMERIC
+    lng : NUMERIC
+    order_index : INT
+}
+
+entity "hashtag_groups" as hashtag_groups {
+    *id : BIGSERIAL <<PK>>
+    --
+    *review_post_id : BIGINT <<FK>>
+}
+
+entity "hashtags" as hashtags {
+    *id : BIGSERIAL <<PK>>
+    --
+    *group_id : BIGINT <<FK>>
+    name : VARCHAR(100)
+    is_selected : BOOLEAN
+}
+
+package "AI Analysis" {
+    entity "ai_review_analysis" as ai_review_analysis {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        *review_post_id : BIGINT <<FK>>
+        prompt_text : TEXT
+        input_json : JSONB
+        output_json : JSONB
+    }
+
+    entity "ai_styles" as ai_styles {
+        *id : BIGSERIAL <<PK>>
+        --
+        *review_analysis_id : BIGINT <<FK>>
+        name : VARCHAR(150)
+    }
+
+    entity "ai_hashtags" as ai_hashtags {
+        *id : BIGSERIAL <<PK>>
+        --
+        *review_analysis_id : BIGINT <<FK>>
+        name : VARCHAR(100)
+    }
+}
+
+review_posts ||..o{ review_photo_groups
+review_posts ||..o{ hashtag_groups
+review_photo_groups ||..o{ review_photos
+hashtag_groups ||..o{ hashtags
+
+review_posts ||--o{ ai_review_analysis : "Generates"
+ai_review_analysis ||..o{ ai_styles
+ai_review_analysis ||..o{ ai_hashtags
+
+newpage
+
+' ---------------------------------------------------------
+' PAGE 5: UTILITIES (Place Search, Checklist, Chat)
+' ---------------------------------------------------------
+title [Cluster] Utilities: Places, Checklists & Memory
+
+package "Place & Search" {
+    enum image_action_type {
+        SAVE_ONLY
+        EDIT_ITINERARY
+        REPLACE
+    }
+
+    entity "places" as places {
+        *id : BIGSERIAL <<PK>>
+        --
+        name : VARCHAR(255)
+        lat : NUMERIC
+        lng : NUMERIC
+        place_type : VARCHAR(500)
+        image_url : VARCHAR
+    }
+
+    entity "image_searches" as image_searches {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        action_type : image_action_type
+    }
+
+    entity "image_search_results" as image_search_results {
+        *id : BIGSERIAL <<PK>>
+        --
+        *history_id : BIGINT <<FK>>
+        *place_id : BIGINT <<FK>>
+        is_selected : BOOLEAN
+        rank : BIGINT
+    }
+}
+
+package "Checklist" {
+    enum checklist_category {
+        PACKING
+        CLOTHES
+        DOCUMENT
+        ETC
+    }
+
+    entity "checklists" as checklists {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        day_index : BIGINT
+    }
+
+    entity "checklist_items" as checklist_items {
+        *id : BIGSERIAL <<PK>>
+        --
+        *checklist_id : BIGINT <<FK>>
+        content : TEXT
+        category : checklist_category
+        is_checked : BOOLEAN
+    }
+}
+
+package "Chat Memory" {
+    entity "chat_memories" as chat_memories {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        agent_id : BIGINT
+        content : TEXT
+    }
+
+    entity "chat_memory_vectors" as chat_memory_vectors {
+        *id : BIGSERIAL <<PK>>
+        --
+        *user_id : BIGINT <<FK>>
+        embedding : VECTOR(1536)
+    }
+}
+
+image_searches ||..o{ image_search_results
+places ||..o{ image_search_results
+checklists ||..o{ checklist_items
+
+newpage
+
+' ---------------------------------------------------------
+' PAGE 6: HOTELS & PAYMENTS CLUSTER
+' ---------------------------------------------------------
+title [Cluster] Hotels & Payments
+
+entity "hotel_bookings" as hotel_bookings {
+    *id : BIGSERIAL <<PK>>
+    --
+    *user_id : BIGINT <<FK>>
+    hotel_id : BIGINT
+    room_type_id : BIGINT
+    rate_plan_id : BIGINT
+    checkin_date : DATE
+    checkout_date : DATE
+    nights : INTEGER
+    total_price : NUMERIC
+    status : VARCHAR
+    payment_status : VARCHAR
+    guest_name : VARCHAR
+    booked_at : TIMESTAMPTZ
+}
+
+entity "payment_transactions" as payment_transactions {
+    *id : BIGSERIAL <<PK>>
+    --
+    *hotel_booking_id : BIGINT <<FK>>
+    payment_method : VARCHAR
+    provider_payment_id : VARCHAR
+    amount : NUMERIC
+    currency : CHAR(3)
+    status : VARCHAR
+    requested_at : TIMESTAMPTZ
+    completed_at : TIMESTAMPTZ
+}
+
+hotel_bookings ||..o{ payment_transactions
+
+@enduml
