@@ -1,6 +1,11 @@
+-- ============================================
+-- TRAVEL PLANS + DAYS + PLACES FULL AUTO DUMMY
+-- For users id 1~10
+-- ============================================
+
 DO $$
 DECLARE
-    u RECORD;
+    u RECORD;                 -- user
     plan_i INT;
     new_plan_id BIGINT;
     new_day_id BIGINT;
@@ -12,21 +17,22 @@ DECLARE
     place_count INT;
     place_i INT;
 
-    selected_place RECORD;
+    selected_name TEXT;
+    selected_address TEXT;
+    selected_lat NUMERIC;
+    selected_lng NUMERIC;
 BEGIN
-    -- 1) id 1~10인 유저만 대상 선정
-    FOR u IN (
-        SELECT id FROM users WHERE id BETWEEN 1 AND 10
-    )
-    LOOP
+
+    -- 1) users 중 id 1~10만을 대상으로 반복
+    FOR u IN (SELECT id FROM users WHERE id BETWEEN 1 AND 10) LOOP
 
         -- 2) 각 유저에게 여행 플랜 3개 생성
         FOR plan_i IN 1..3 LOOP
 
-            -- 여행 일수 3~7일 랜덤
+            -- 여행 일수: 3~7일 랜덤
             day_count := (3 + floor(random() * 5))::int;
 
-            -- 여행 시작일: 앞으로 60일 중 랜덤
+            -- 여행 시작일: 향후 60일 중 랜덤
             start_date := CURRENT_DATE + ((random() * 60)::int);
 
             -- travel_plan 생성
@@ -36,6 +42,7 @@ BEGIN
                 start_date,
                 end_date,
                 created_at,
+                updated_at,
                 is_ended
             )
             VALUES (
@@ -44,14 +51,16 @@ BEGIN
                 start_date,
                 start_date + (day_count - 1),
                 NOW(),
+                NOW(),
                 FALSE
             )
             RETURNING id INTO new_plan_id;
 
+            -- ================================
             -- travel_days + travel_places 생성
+            -- ================================
             FOR day_i IN 0..(day_count - 1) LOOP
 
-                -- DAY insert
                 INSERT INTO travel_days (
                     travel_plan_id,
                     day_index,
@@ -66,14 +75,14 @@ BEGIN
                 )
                 RETURNING id INTO new_day_id;
 
-                -- 하루에 2~5개의 랜덤 장소 생성
+                -- 하루 장소 2~5개 랜덤 생성
                 place_count := (2 + floor(random() * 4))::int;
 
                 FOR place_i IN 1..place_count LOOP
 
-                    -- places 테이블에서 랜덤 장소 1개 가져오기
-                    SELECT *
-                    INTO selected_place
+                    -- places 테이블에서 랜덤 장소 1개 선택
+                    SELECT name, address, lat, lng
+                    INTO selected_name, selected_address, selected_lat, selected_lng
                     FROM places
                     ORDER BY random()
                     LIMIT 1;
@@ -92,13 +101,13 @@ BEGIN
                     )
                     VALUES (
                         new_day_id,
-                        selected_place.name,
+                        selected_name,
                         (start_date + day_i) + ((8 + place_i)::text || ' hour')::interval,
                         (start_date + day_i) + ((9 + place_i)::text || ' hour')::interval,
-                        selected_place.name,
-                        selected_place.address,
-                        selected_place.lat,
-                        selected_place.lng,
+                        selected_name,
+                        selected_address,
+                        selected_lat,
+                        selected_lng,
                         5000 + (random()*40000)
                     );
 
