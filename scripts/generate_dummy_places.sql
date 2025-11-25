@@ -17,17 +17,21 @@ DECLARE
         'attraction', 'restaurant', 'landmark', 'museum', 'shopping', 'nature', 'cafe'
     ];
 
+    image_statuses image_status_enum[] := ARRAY['PENDING', 'READY', 'FAILED'];
+
 BEGIN
     FOR i IN 1..50 LOOP
         INSERT INTO places (
             name,
-            description,
+            content,
             lat,
             lng,
             address,
             place_type,
-            image_url,
-            thumbnail_url
+            internal_original_url,
+            internal_thumbnail_url,
+            external_image_url,
+            image_status
         )
         VALUES (
             place_names[ floor(random() * array_length(place_names, 1) + 1) ],
@@ -36,8 +40,10 @@ BEGIN
             lng_min + random() * (lng_max - lng_min),
             '서울특별시 랜덤 주소 ' || i,
             place_types[ floor(random() * array_length(place_types, 1) + 1) ],
-            'https://picsum.photos/seed/place' || i || '/800/600',
-            'https://picsum.photos/seed/thumb' || i || '/400/300'
+            'https://picsum.photos/seed/original' || i || '/800/600',
+            'https://picsum.photos/seed/thumb' || i || '/400/300',
+            'https://picsum.photos/seed/external' || i || '/1000/800',
+            image_statuses[ floor(random() * array_length(image_statuses, 1) + 1) ]
         );
     END LOOP;
 END $$;
