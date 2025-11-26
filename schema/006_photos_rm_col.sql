@@ -107,12 +107,12 @@ CREATE TABLE current_activities (
 -- REVIEW POSTS
 CREATE TABLE review_posts (
     id BIGSERIAL PRIMARY KEY,
-    content TEXT NOT NULL,
-    is_posted BOOLEAN NOT NULL,
+    content TEXT,
+    is_posted BOOLEAN SET DEFAULT false;,
     review_post_url TEXT,
     created_at TIMESTAMPTZ NOT NULL,
     travel_plan_id BIGINT NOT NULL,
-    style_id BIGINT NOT NULL
+    style_id BIGINT
 );
 
 CREATE TABLE review_photo_groups (
