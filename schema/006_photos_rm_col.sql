@@ -138,7 +138,6 @@ CREATE TABLE hashtag_groups (
 CREATE TABLE hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    is_selected BOOLEAN NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     group_id BIGINT NOT NULL
 );
