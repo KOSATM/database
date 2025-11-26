@@ -107,12 +107,12 @@ CREATE TABLE current_activities (
 -- REVIEW POSTS
 CREATE TABLE review_posts (
     id BIGSERIAL PRIMARY KEY,
-    content TEXT NOT NULL,
-    is_posted BOOLEAN NOT NULL,
+    content TEXT,
+    is_posted BOOLEAN DEFAULT false,
     review_post_url TEXT,
     created_at TIMESTAMPTZ NOT NULL,
     travel_plan_id BIGINT NOT NULL,
-    style_id BIGINT NOT NULL
+    review_style_id BIGINT
 );
 
 CREATE TABLE review_photo_groups (
@@ -124,9 +124,6 @@ CREATE TABLE review_photo_groups (
 CREATE TABLE review_photos (
     id BIGSERIAL PRIMARY KEY,
     file_url TEXT NOT NULL,
-    lat NUMERIC(10,7),
-    lng NUMERIC(10,7),
-    taken_at TIMESTAMPTZ,
     order_index INT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     group_id BIGINT NOT NULL
@@ -141,7 +138,6 @@ CREATE TABLE review_hashtag_groups (
 CREATE TABLE review_hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    is_selected BOOLEAN NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     group_id BIGINT NOT NULL
 );
@@ -158,18 +154,24 @@ CREATE TABLE ai_review_analysis (
     review_post_id BIGINT NOT NULL
 );
 
-CREATE TABLE ai_styles (
+CREATE TABLE ai_review_styles (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
-    review_analysis_id BIGINT NOT NULL
+    review_analysis_id BIGINT NOT NULL,
+    -- 확장된 컬럼들
+    tone_code VARCHAR(50),
+    is_trendy BOOLEAN DEFAULT FALSE,
+    description TEXT,
+    embedding VECTOR(1536)
 );
 
-CREATE TABLE ai_hashtags (
+CREATE TABLE ai_review_hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
-    review_analysis_id BIGINT NOT NULL
+    review_analysis_id BIGINT NOT NULL,
+    review_style_id BIGINT   -- 새로 추가됨
 );
 
 
@@ -188,7 +190,7 @@ CREATE TABLE places (
     image_status image_status_enum
 );
 
-CREATE TABLE image_searches (
+CREATE TABLE image_search_places (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
@@ -197,7 +199,7 @@ CREATE TABLE image_searches (
 
 CREATE TABLE image_search_results (
     id BIGSERIAL PRIMARY KEY,
-    history_id BIGINT NOT NULL,
+    image_search_place_id BIGINT NOT NULL,
     place_id BIGINT NOT NULL,
     is_selected BOOLEAN NOT NULL DEFAULT false,
     rank BIGINT NOT NULL
@@ -295,5 +297,53 @@ CREATE TABLE payment_transactions (
 
 -- TOILETS
 CREATE TABLE toilets (
-    id BIGSERIAL PRIMARY KEY
+    id BIGSERIAL PRIMARY KEY;
 )
+
+-- =========================================
+-- 4. ADD FOREIGN KEY CONSTRAINTS (ALTER)
+-- =========================================
+
+-- Users & Auth
+ALTER TABLE user_identities ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE sns_tokens ADD FOREIGN KEY (user_id) REFERENCES users(id);
+
+-- Travel Planning
+ALTER TABLE travel_plan_snapshots ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE travel_plans ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE travel_days ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plans(id);
+ALTER TABLE travel_places ADD FOREIGN KEY (day_id) REFERENCES travel_days(id);
+ALTER TABLE current_activities ADD FOREIGN KEY (travel_place_id) REFERENCES travel_places(id);
+
+-- Review & Posts
+ALTER TABLE review_posts ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plans(id);
+ALTER TABLE review_photo_groups ADD FOREIGN KEY (review_post_id) REFERENCES review_posts(id);
+ALTER TABLE review_photos ADD FOREIGN KEY (group_id) REFERENCES review_photo_groups(id);
+ALTER TABLE review_hashtag_groups ADD FOREIGN KEY (review_post_id) REFERENCES review_posts(id);
+ALTER TABLE review_hashtags ADD FOREIGN KEY (group_id) REFERENCES review_hashtag_groups(id);
+ALTER TABLE review_posts ADD FOREIGN KEY (review_style_id) REFERENCES ai_review_styles(id);
+
+-- AI Analysis
+ALTER TABLE ai_review_analysis ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE ai_review_analysis ADD FOREIGN KEY (review_post_id) REFERENCES review_posts(id);
+ALTER TABLE ai_review_styles ADD FOREIGN KEY (review_analysis_id) REFERENCES ai_review_analysis(id);
+ALTER TABLE ai_review_hashtags ADD FOREIGN KEY (review_analysis_id) REFERENCES ai_review_analysis(id);
+ALTER TABLE ai_review_hashtags ADD FOREIGN KEY (review_style_id) REFERENCES ai_review_styles(id);
+
+
+-- Places & Search
+ALTER TABLE image_search_places ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE image_search_results ADD FOREIGN KEY (image_search_place_id) REFERENCES image_search_places(id);
+ALTER TABLE image_search_results ADD FOREIGN KEY (place_id) REFERENCES places(id);
+
+-- Chat Memory
+ALTER TABLE chat_memories ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE chat_memory_vectors ADD FOREIGN KEY (user_id) REFERENCES users(id);
+
+-- Checklist
+ALTER TABLE checklists ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE checklist_items ADD FOREIGN KEY (checklist_id) REFERENCES checklists(id);
+
+-- Hotel & Payment
+ALTER TABLE hotel_bookings ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE payment_transactions ADD FOREIGN KEY (hotel_booking_id) REFERENCES hotel_bookings(id);
