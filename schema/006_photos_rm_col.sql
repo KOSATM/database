@@ -107,12 +107,12 @@ CREATE TABLE current_activities (
 -- REVIEW POSTS
 CREATE TABLE review_posts (
     id BIGSERIAL PRIMARY KEY,
-    content TEXT NOT NULL,
-    is_posted BOOLEAN NOT NULL,
+    content TEXT,
+    is_posted BOOLEAN SET DEFAULT false;,
     review_post_url TEXT,
     created_at TIMESTAMPTZ NOT NULL,
     travel_plan_id BIGINT NOT NULL,
-    style_id BIGINT NOT NULL
+    style_id BIGINT
 );
 
 CREATE TABLE review_photo_groups (
@@ -129,16 +129,15 @@ CREATE TABLE review_photos (
     group_id BIGINT NOT NULL
 );
 
-CREATE TABLE hashtag_groups (
+CREATE TABLE review_hashtag_groups (
     id BIGSERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL,
     review_post_id BIGINT NOT NULL
 );
 
-CREATE TABLE hashtags (
+CREATE TABLE review_hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    is_selected BOOLEAN NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     group_id BIGINT NOT NULL
 );
