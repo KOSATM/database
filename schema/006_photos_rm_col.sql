@@ -129,13 +129,13 @@ CREATE TABLE review_photos (
     group_id BIGINT NOT NULL
 );
 
-CREATE TABLE hashtag_groups (
+CREATE TABLE review_hashtag_groups (
     id BIGSERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL,
     review_post_id BIGINT NOT NULL
 );
 
-CREATE TABLE hashtags (
+CREATE TABLE review_hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
