@@ -1,4 +1,4 @@
-﻿-- =========================================
+-- =========================================
 -- 1. EXTENSIONS
 -- =========================================
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -9,13 +9,15 @@ CREATE EXTENSION IF NOT EXISTS vector;
 -- =========================================
 DROP TYPE IF EXISTS image_action_type CASCADE;
 DROP TYPE IF EXISTS checklist_category CASCADE;
+DROP TYPE IF EXISTS image_status_enum CASCADE;
 
 CREATE TYPE image_action_type AS ENUM ('SAVE_ONLY', 'EDIT_ITINERARY', 'REPLACE');
 CREATE TYPE checklist_category AS ENUM ('PACKING', 'CLOTHES', 'DOCUMENT', 'ETC');
+CREATE TYPE image_status_enum AS ENUM ('PENDING', 'READY', 'FAILED');
 
 
 -- =========================================
--- 3. CREATE TABLES (WITHOUT FKs)
+-- 3. CREATE TABLES (NO FKs)
 -- =========================================
 
 -- USERS
@@ -33,10 +35,8 @@ CREATE TABLE users (
 CREATE TABLE user_identities (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    provider VARCHAR(50) NOT NULL, -- 예: 'KAKAO', 'GOOGLE', 'APPLE'
+    provider VARCHAR(50) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    
-    -- 사용자당 동일한 제공업체로 중복 가입 방지 (Unique Constraint)
     UNIQUE (user_id, provider)
 );
 
@@ -53,7 +53,8 @@ CREATE TABLE sns_tokens (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- TRAVEL PLANNING
+
+-- TRAVEL PLAN
 CREATE TABLE travel_plan_snapshots (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -65,7 +66,7 @@ CREATE TABLE travel_plan_snapshots (
 CREATE TABLE travel_plans (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    budget DECIMAL(19, 2) NOT NULL,
+    budget DECIMAL(19,2) NOT NULL,
     start_date DATE,
     end_date DATE,
     created_at TIMESTAMPTZ,
@@ -91,18 +92,19 @@ CREATE TABLE travel_places (
     address VARCHAR(200),
     lat NUMERIC(10,7),
     lng NUMERIC(10,7),
-    expected_cost DECIMAL(19, 2)
+    expected_cost DECIMAL(19,2)
 );
 
 CREATE TABLE current_activities (
     id BIGSERIAL PRIMARY KEY,
     travel_place_id BIGINT NOT NULL,
-    actual_cost DECIMAL(19, 2),
+    actual_cost DECIMAL(19,2),
     memo TEXT,
     ended_at TIMESTAMPTZ
 );
 
--- TRAVELGRAM POSTS / review_photos / HASHTAGS
+
+-- REVIEW POSTS
 CREATE TABLE review_posts (
     id BIGSERIAL PRIMARY KEY,
     content TEXT NOT NULL,
@@ -110,7 +112,7 @@ CREATE TABLE review_posts (
     review_post_url TEXT,
     created_at TIMESTAMPTZ NOT NULL,
     travel_plan_id BIGINT NOT NULL,
-    review_style_id BIGINT
+    style_id BIGINT NOT NULL
 );
 
 CREATE TABLE review_photo_groups (
@@ -130,13 +132,13 @@ CREATE TABLE review_photos (
     group_id BIGINT NOT NULL
 );
 
-CREATE TABLE review_hashtag_groups (
+CREATE TABLE hashtag_groups (
     id BIGSERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL,
     review_post_id BIGINT NOT NULL
 );
 
-CREATE TABLE review_hashtags(
+CREATE TABLE hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     is_selected BOOLEAN NOT NULL,
@@ -144,7 +146,8 @@ CREATE TABLE review_hashtags(
     group_id BIGINT NOT NULL
 );
 
--- AI ANALYSIS (STYLE / HASHTAG)
+
+-- AI ANALYSIS
 CREATE TABLE ai_review_analysis (
     id BIGSERIAL PRIMARY KEY,
     prompt_text TEXT NOT NULL,
@@ -155,34 +158,37 @@ CREATE TABLE ai_review_analysis (
     review_post_id BIGINT NOT NULL
 );
 
-CREATE TABLE ai_review_styles (
+CREATE TABLE ai_styles (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     review_analysis_id BIGINT NOT NULL
 );
 
-CREATE TABLE ai_review_hashtags(
+CREATE TABLE ai_hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     review_analysis_id BIGINT NOT NULL
 );
 
--- PLACES & SEARCH
+
+-- PLACES
 CREATE TABLE places (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(1000),
+    content VARCHAR(1000),
     lat NUMERIC(10,7) NOT NULL,
     lng NUMERIC(10,7) NOT NULL,
     address VARCHAR(500) NOT NULL,
     place_type VARCHAR(500) NOT NULL,
-    image_url VARCHAR(1000),
-    thumbnail_url VARCHAR(1000)
+    internal_original_url VARCHAR(1000),
+    internal_thumbnail_url VARCHAR(1000),
+    external_image_url TEXT,
+    image_status image_status_enum
 );
 
-CREATE TABLE image_search_places(
+CREATE TABLE image_searches (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
@@ -191,41 +197,18 @@ CREATE TABLE image_search_places(
 
 CREATE TABLE image_search_results (
     id BIGSERIAL PRIMARY KEY,
-    image_search_place_id BIGINT NOT NULL,
+    history_id BIGINT NOT NULL,
     place_id BIGINT NOT NULL,
-    is_selected BOOLEAN NOT NULL DEFAULT FALSE,
+    is_selected BOOLEAN NOT NULL DEFAULT false,
     rank BIGINT NOT NULL
 );
 
--- CHAT MEMORY / VECTOR MEMORY
-CREATE TABLE chat_memories (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    agent_name VARCHAR(50) NOT NULL,
-    order_index INT NOT NULL,
-    content TEXT NOT NULL,
-    token_usage BIGINT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    role VARCHAR(10) NOT NULL
-);
-
-CREATE TABLE chat_memory_vectors (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    agent_name VARCHAR(50) NOT NULL,
-    order_index BIGINT NOT NULL,
-    content TEXT NOT NULL,
-    token_usage BIGINT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    role VARCHAR(10) NOT NULL,
-    embedding VECTOR(1536)
-);
 
 -- CHECKLIST
 CREATE TABLE checklists (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    day_index SMALLINT,
+    day_index BIGINT,
     created_at TIMESTAMPTZ
 );
 
@@ -238,11 +221,36 @@ CREATE TABLE checklist_items (
     created_at TIMESTAMPTZ NOT NULL
 );
 
--- HOTEL / PAYMENT
+
+-- CHAT MEMORY
+CREATE TABLE chat_memories (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    agent_id BIGINT NOT NULL,
+    order_index INT NOT NULL,
+    content TEXT NOT NULL,
+    token_usage BIGINT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    role VARCHAR(10) NOT NULL
+);
+
+CREATE TABLE chat_memory_vectors (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    agent_id BIGINT NOT NULL,
+    order_index INT NOT NULL,
+    content TEXT NOT NULL,
+    token_usage BIGINT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    role VARCHAR(10) NOT NULL,
+    embedding vector(1536)
+);
+
+
+-- HOTEL & PAYMENT
 CREATE TABLE hotel_bookings (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    -- 양식을 따른 것이므로 id BIGINT를 사용하지 않음
     external_booking_id VARCHAR(100),
     hotel_id BIGINT NOT NULL,
     room_type_id BIGINT NOT NULL,
@@ -272,7 +280,6 @@ CREATE TABLE payment_transactions (
     id BIGSERIAL PRIMARY KEY,
     hotel_booking_id BIGINT NOT NULL,
     payment_method VARCHAR(30) NOT NULL,
-    -- 양식을 따른 것이므로 id BIGINT를 사용하지 않음
     provider_payment_id VARCHAR(100),
     amount DECIMAL(19,2) NOT NULL,
     currency CHAR(3) NOT NULL,
@@ -285,58 +292,7 @@ CREATE TABLE payment_transactions (
     updated_at TIMESTAMPTZ NOT NULL
 );
 
+
 -- TOILETS
 CREATE TABLE toilets (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    lat NUMERIC(10,7) NOT NULL,
-    lng NUMERIC(10,7) NOT NULL,
-    address VARCHAR(500) NOT NULL
-);
-
-
--- =========================================
--- 4. ADD FOREIGN KEY CONSTRAINTS (ALTER)
--- =========================================
-
--- Users & Auth
-ALTER TABLE user_identities ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE sns_tokens ADD FOREIGN KEY (user_id) REFERENCES users(id);
-
--- Travel Planning
-ALTER TABLE travel_plan_snapshots ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE travel_plans ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE travel_days ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plans(id);
-ALTER TABLE travel_places ADD FOREIGN KEY (day_id) REFERENCES travel_days(id);
-ALTER TABLE current_activities ADD FOREIGN KEY (travel_place_id) REFERENCES travel_places(id);
-
--- Review & Posts
-ALTER TABLE review_posts ADD FOREIGN KEY (travel_plan_id) REFERENCES travel_plans(id);
-ALTER TABLE review_photo_groups ADD FOREIGN KEY (review_post_id) REFERENCES review_posts(id);
-ALTER TABLE review_photos ADD FOREIGN KEY (group_id) REFERENCES review_photo_groups(id);
-ALTER TABLE review_hashtag_groups ADD FOREIGN KEY (review_post_id) REFERENCES review_posts(id);
-ALTER TABLE review_hashtags ADD FOREIGN KEY (group_id) REFERENCES review_hashtag_groups(id);
-ALTER TABLE review_posts ADD FOREIGN KEY (review_style_id) REFERENCES ai_review_styles(id);
-
--- AI Analysis
-ALTER TABLE ai_review_analysis ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE ai_review_analysis ADD FOREIGN KEY (review_post_id) REFERENCES review_posts(id);
-ALTER TABLE ai_review_styles ADD FOREIGN KEY (review_analysis_id) REFERENCES ai_review_analysis(id);
-ALTER TABLE ai_review_hashtags ADD FOREIGN KEY (review_analysis_id) REFERENCES ai_review_analysis(id);
-
--- Places & Search
-ALTER TABLE image_search_places ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE image_search_results ADD FOREIGN KEY (image_search_place_id) REFERENCES image_search_places(id);
-ALTER TABLE image_search_results ADD FOREIGN KEY (place_id) REFERENCES places(id);
-
--- Chat Memory
-ALTER TABLE chat_memories ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE chat_memory_vectors ADD FOREIGN KEY (user_id) REFERENCES users(id);
-
--- Checklist
-ALTER TABLE checklists ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE checklist_items ADD FOREIGN KEY (checklist_id) REFERENCES checklists(id);
-
--- Hotel & Payment
-ALTER TABLE hotel_bookings ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE payment_transactions ADD FOREIGN KEY (hotel_booking_id) REFERENCES hotel_bookings(id);
+    id BIGSERIAL PRIMARY K
