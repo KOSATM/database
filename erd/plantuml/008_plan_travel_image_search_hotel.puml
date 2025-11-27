@@ -1,0 +1,315 @@
+@startuml PostgreSQL_ERD_All
+!define TABLE(name) class name << (T,#EFEFEF) >>
+!define PK(x) <b>x</b>
+!define FK(x) <i>x</i>
+
+hide circle
+
+TABLE(users) {
+  PK(id) : bigint
+  is_active : boolean
+  last_login_at : timestamptz
+  name : varchar
+  email : varchar
+}
+
+TABLE(user_identities) {
+  PK(id) : bigint
+  FK(user_id) : bigint
+  provider : varchar
+}
+
+TABLE(plans) {
+  PK(id) : bigint
+  FK(user_id) : bigint
+  budget : numeric
+  start_date : date
+  end_date : date
+}
+
+TABLE(plan_days) {
+  PK(id) : bigint
+  FK(travel_plan_id) : bigint
+  day_index : smallint
+  plan_date : date
+}
+
+TABLE(plan_places) {
+  PK(id) : bigint
+  FK(day_id) : bigint
+  title : varchar
+}
+
+TABLE(current_activities) {
+  PK(id) : bigint
+  FK(travel_place_id) : bigint
+}
+
+TABLE(review_posts) {
+  PK(id) : bigint
+  FK(travel_plan_id) : bigint
+  FK(review_style_id) : bigint
+}
+
+TABLE(review_photo_groups) {
+  PK(id) : bigint
+  FK(review_post_id) : bigint
+}
+
+TABLE(review_photos) {
+  PK(id) : bigint
+  FK(group_id) : bigint
+  order_index : int
+}
+
+TABLE(review_hashtag_groups) {
+  PK(id) : bigint
+  FK(review_post_id) : bigint
+}
+
+TABLE(review_hashtags) {
+  PK(id) : bigint
+  FK(group_id) : bigint
+}
+
+TABLE(ai_review_analysis) {
+  PK(id) : bigint
+  FK(user_id) : bigint
+  FK(review_post_id) : bigint
+}
+
+TABLE(ai_review_styles) {
+  PK(id) : bigint
+  FK(review_analysis_id) : bigint
+  name : varchar
+  tone_code : varchar
+}
+
+TABLE(ai_review_hashtags) {
+  PK(id) : bigint
+  FK(review_analysis_id) : bigint
+  FK(review_style_id) : bigint
+  name : varchar
+}
+
+TABLE(travel_places) {
+  PK(id) : bigint
+  content_id : text
+  title : text
+  FK(category_code) : text
+}
+
+TABLE(travel_place_categories) {
+  PK(code) : text
+  parent_code : text
+}
+
+TABLE(image_places) {
+  PK(id) : bigint
+  name : varchar
+}
+
+TABLE(image_search_sessions) {
+  PK(id) : bigint
+  FK(user_id) : bigint
+}
+
+TABLE(image_search_candidates) {
+  PK(id) : bigint
+  FK(image_search_place_id) : bigint
+  FK(place_id) : bigint
+}
+
+TABLE(hotels) {
+  PK(id) : bigint
+  name : varchar
+}
+
+TABLE(hotel_rooms) {
+  PK(id) : bigint
+  FK(hotel_id) : bigint
+}
+
+TABLE(hotel_rate_plans) {
+  PK(id) : bigint
+  FK(hotel_id) : bigint
+  FK(room_type_id) : bigint
+}
+
+TABLE(hotel_rate_plan_prices) {
+  PK(id) : bigint
+  FK(rate_plan_id) : bigint
+}
+
+TABLE(hotel_bookings) {
+  PK(id) : bigint
+  FK(user_id) : bigint
+  FK(hotel_id) : bigint
+  FK(room_type_id) : bigint
+  FK(rate_plan_id) : bigint
+}
+
+TABLE(payment_transactions) {
+  PK(id) : bigint
+  FK(hotel_booking_id) : bigint
+}
+
+TABLE(checklists) {
+  PK(id) : bigint
+  FK(user_id) : bigint
+}
+
+TABLE(checklist_items) {
+  PK(id) : bigint
+  FK(checklist_id) : bigint
+}
+
+users ||--o{ user_identities
+users ||--o{ plans
+plans ||--o{ plan_days
+plan_days ||--o{ plan_places
+plan_places ||--|| current_activities
+
+plans ||--o{ review_posts
+review_posts ||--o{ review_photo_groups
+review_photo_groups ||--o{ review_photos
+review_posts ||--o{ review_hashtag_groups
+review_hashtag_groups ||--o{ review_hashtags
+
+users ||--o{ ai_review_analysis
+review_posts ||--o{ ai_review_analysis
+ai_review_analysis ||--o{ ai_review_styles
+ai_review_analysis ||--o{ ai_review_hashtags
+ai_review_styles ||--o{ ai_review_hashtags
+
+travel_place_categories ||--o{ travel_places
+image_places ||--o{ image_search_candidates
+image_search_sessions ||--o{ image_search_candidates
+users ||--o{ image_search_sessions
+
+hotels ||--o{ hotel_rooms
+hotels ||--o{ hotel_rate_plans
+hotel_rooms ||--o{ hotel_rate_plans
+hotel_rate_plans ||--o{ hotel_rate_plan_prices
+users ||--o{ hotel_bookings
+hotels ||--o{ hotel_bookings
+hotel_rooms ||--o{ hotel_bookings
+hotel_rate_plans ||--o{ hotel_bookings
+hotel_bookings ||--o{ payment_transactions
+
+users ||--o{ checklists
+checklists ||--o{ checklist_items
+
+@enduml
+
+@newpage
+@startuml User_Cluster
+
+package "User & Auth" {
+
+  class users
+  class user_identities
+  class sns_tokens
+  class chat_memories
+  class chat_memory_vectors
+
+  users ||--o{ user_identities
+  users ||--o{ sns_tokens
+  users ||--o{ chat_memories
+  users ||--o{ chat_memory_vectors
+}
+
+@enduml
+@newpage
+@startuml Travel_Plan_Cluster
+
+package "Travel & Plans" {
+  class plans
+  class plan_days
+  class plan_places
+  class current_activities
+  class plan_snapshots
+
+  plans ||--o{ plan_days
+  plan_days ||--o{ plan_places
+  plan_places ||--|| current_activities
+  plans ||--o{ plan_snapshots
+}
+
+@enduml
+@newpage
+@startuml Review_AI_Cluster
+
+package "Review & AI" {
+  class review_posts
+  class review_photo_groups
+  class review_photos
+  class review_hashtag_groups
+  class review_hashtags
+  class ai_review_analysis
+  class ai_review_styles
+  class ai_review_hashtags
+
+  review_posts ||--o{ review_photo_groups
+  review_photo_groups ||--o{ review_photos
+  review_posts ||--o{ review_hashtag_groups
+  review_hashtag_groups ||--o{ review_hashtags
+
+  review_posts ||--o{ ai_review_analysis
+  ai_review_analysis ||--o{ ai_review_styles
+  ai_review_analysis ||--o{ ai_review_hashtags
+  ai_review_styles ||--o{ ai_review_hashtags
+}
+
+@enduml
+@newpage
+@startuml Hotel_Cluster
+
+package "Hotels & Booking" {
+
+  class hotels
+  class hotel_rooms
+  class hotel_rate_plans
+  class hotel_rate_plan_prices
+  class hotel_bookings
+  class payment_transactions
+
+  hotels ||--o{ hotel_rooms
+  hotel_rooms ||--o{ hotel_rate_plans
+  hotel_rate_plans ||--o{ hotel_rate_plan_prices
+
+  hotels ||--o{ hotel_bookings
+  hotel_rooms ||--o{ hotel_bookings
+  hotel_rate_plans ||--o{ hotel_bookings
+  hotel_bookings ||--o{ payment_transactions
+}
+
+@enduml
+@newpage
+@startuml Image_Cluster
+
+package "Image & Place" {
+
+  class image_places
+  class image_search_sessions
+  class image_search_candidates
+  class travel_places
+  class travel_place_categories
+
+  travel_place_categories ||--o{ travel_places
+  image_search_sessions ||--o{ image_search_candidates
+  image_places ||--o{ image_search_candidates
+}
+
+@enduml
+@newpage
+@startuml Checklist_Cluster
+
+package "Checklist" {
+  class checklists
+  class checklist_items
+
+  checklists ||--o{ checklist_items
+}
+
+@enduml
