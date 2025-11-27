@@ -1,0 +1,268 @@
+@startuml
+' ============================================================
+' USERS & AUTH PAGE
+' ============================================================
+title Users & Auth
+
+entity users {
+    * id : BIGSERIAL
+    --
+    is_active
+    last_login_at
+    name
+    email
+    profile_image_url
+}
+
+entity user_identities {
+    * id : BIGSERIAL
+    user_id : BIGINT
+    provider
+}
+
+entity sns_tokens {
+    * id : BIGSERIAL
+    user_id : BIGINT
+}
+
+users ||--o{ user_identities : "fk_user_identities_user"
+users ||--o{ sns_tokens : "fk_sns_tokens_user"
+
+newpage
+
+' ============================================================
+' TRAVEL PLANNING PAGE
+' ============================================================
+title Travel Planning
+
+entity travel_plans {
+    * id
+    user_id
+}
+
+entity travel_days {
+    * id
+    travel_plan_id
+}
+
+entity travel_places {
+    * id
+    day_id
+}
+
+entity current_activities {
+    * id
+    travel_place_id
+}
+
+entity travel_plan_snapshots {
+    * id
+    user_id
+}
+
+users ||--o{ travel_plans : fk_travel_plans_user
+travel_plans ||--o{ travel_days : fk_travel_days_plan
+travel_days ||--o{ travel_places : fk_travel_places_day
+travel_places ||--o{ current_activities : fk_current_activities_place
+users ||--o{ travel_plan_snapshots : fk_travel_plan_snapshots_user
+
+newpage
+
+' ============================================================
+' REVIEW POSTS PAGE
+' ============================================================
+title Review & Posts
+
+entity review_posts {
+    * id
+    travel_plan_id
+    review_style_id
+}
+
+entity review_photo_groups {
+    * id
+    review_post_id
+}
+
+entity review_photos {
+    * id
+    group_id
+}
+
+entity review_hashtag_groups {
+    * id
+    review_post_id
+}
+
+entity review_hashtags {
+    * id
+    group_id
+}
+
+travel_plans ||--o{ review_posts : fk_review_posts_plan
+review_posts ||--o{ review_photo_groups : fk_review_photo_groups_post
+review_photo_groups ||--o{ review_photos : fk_review_photos_group
+review_posts ||--o{ review_hashtag_groups : fk_review_hashtag_groups_post
+review_hashtag_groups ||--o{ review_hashtags : fk_review_hashtags_group
+
+newpage
+
+' ============================================================
+' AI ANALYSIS PAGE
+' ============================================================
+title AI Analysis
+
+entity ai_review_analysis {
+    * id
+    user_id
+    review_post_id
+}
+
+entity ai_review_styles {
+    * id
+    review_analysis_id
+}
+
+entity ai_review_hashtags {
+    * id
+    review_analysis_id
+    review_style_id
+}
+
+users ||--o{ ai_review_analysis : fk_ai_review_analysis_user
+review_posts ||--o{ ai_review_analysis : fk_ai_review_analysis_post
+ai_review_analysis ||--o{ ai_review_styles : fk_ai_review_styles_analysis
+ai_review_analysis ||--o{ ai_review_hashtags : fk_ai_review_hashtags_analysis
+ai_review_styles ||--o{ ai_review_hashtags : fk_ai_review_hashtags_style
+ai_review_styles ||--o{ review_posts : fk_review_posts_style
+
+newpage
+
+' ============================================================
+' PLACES PAGE
+' ============================================================
+title Places & Image Search
+
+entity places {
+    * id
+}
+
+entity image_search_places {
+    * id
+    user_id
+}
+
+entity image_search_results {
+    * id
+    image_search_place_id
+    place_id
+}
+
+users ||--o{ image_search_places : fk_image_search_places_user
+image_search_places ||--o{ image_search_results : fk_image_search_results_search_place
+places ||--o{ image_search_results : fk_image_search_results_place
+
+newpage
+
+' ============================================================
+' CHECKLIST PAGE
+' ============================================================
+title Checklist
+
+entity checklists {
+    * id
+    user_id
+}
+
+entity checklist_items {
+    * id
+    checklist_id
+}
+
+users ||--o{ checklists : fk_checklists_user
+checklists ||--o{ checklist_items : fk_checklist_items_checklist
+
+newpage
+
+' ============================================================
+' CHAT MEMORY PAGE
+' ============================================================
+title Chat Memory
+
+entity chat_memories {
+    * id
+    user_id
+}
+
+entity chat_memory_vectors {
+    * id
+    user_id
+}
+
+users ||--o{ chat_memories : fk_chat_memories_user
+users ||--o{ chat_memory_vectors : fk_chat_memory_vectors_user
+
+newpage
+
+' ============================================================
+' HOTEL & PAYMENT PAGE
+' ============================================================
+title Hotel & Payment
+
+entity hotel_bookings {
+    * id
+    user_id
+}
+
+entity payment_transactions {
+    * id
+    hotel_booking_id
+}
+
+users ||--o{ hotel_bookings : fk_hotel_bookings_user
+hotel_bookings ||--o{ payment_transactions : fk_payment_transactions_booking
+
+newpage
+
+' ============================================================
+' FULL SCHEMA PAGE
+' ============================================================
+title FULL DATABASE SCHEMA (All Tables & Relations)
+
+' Reinclude all entities (summarized)
+
+users ||--o{ user_identities
+users ||--o{ sns_tokens
+users ||--o{ travel_plans
+users ||--o{ travel_plan_snapshots
+users ||--o{ ai_review_analysis
+users ||--o{ image_search_places
+users ||--o{ checklists
+users ||--o{ chat_memories
+users ||--o{ chat_memory_vectors
+users ||--o{ hotel_bookings
+
+travel_plans ||--o{ travel_days
+travel_days ||--o{ travel_places
+travel_places ||--o{ current_activities
+
+travel_plans ||--o{ review_posts
+review_posts ||--o{ review_photo_groups
+review_photo_groups ||--o{ review_photos
+review_posts ||--o{ review_hashtag_groups
+review_hashtag_groups ||--o{ review_hashtags
+
+review_posts ||--o{ ai_review_analysis
+ai_review_analysis ||--o{ ai_review_styles
+ai_review_styles ||--o{ review_posts
+ai_review_analysis ||--o{ ai_review_hashtags
+ai_review_styles ||--o{ ai_review_hashtags
+
+image_search_places ||--o{ image_search_results
+places ||--o{ image_search_results
+
+checklists ||--o{ checklist_items
+
+hotel_bookings ||--o{ payment_transactions
+
+@enduml
