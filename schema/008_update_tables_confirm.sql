@@ -40,24 +40,24 @@ CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
 -- 기존 DDL에는 DROP이 없으므로, 필요에 따라 수동으로 추가해야 하지만,
 -- 여기서는 일단 CREATE만 진행합니다.
 CREATE TYPE public.checklist_category AS ENUM (
-    'PACKING',
-    'CLOTHES',
-    'DOCUMENT',
-    'ETC'
+  'PACKING',
+  'CLOTHES',
+  'DOCUMENT',
+  'ETC'
 );
 ALTER TYPE public.checklist_category OWNER TO postgres;
 
 CREATE TYPE public.image_action_type AS ENUM (
-    'SAVE_ONLY',
-    'EDIT_ITINERARY',
-    'REPLACE'
+  'SAVE_ONLY',
+  'EDIT_ITINERARY',
+  'REPLACE'
 );
 ALTER TYPE public.image_action_type OWNER TO postgres;
 
 CREATE TYPE public.image_status_enum AS ENUM (
-    'PENDING',
-    'READY',
-    'FAILED'
+  'PENDING',
+  'READY',
+  'FAILED'
 );
 ALTER TYPE public.image_status_enum OWNER TO postgres;
 
@@ -67,11 +67,11 @@ ALTER TYPE public.image_status_enum OWNER TO postgres;
 
 -- Name: update_timestamp(); Type: FUNCTION; Schema: public; Owner: postgres
 CREATE FUNCTION public.update_timestamp() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
+  LANGUAGE plpgsql
+  AS $$
 BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
+  NEW.updated_at = NOW();
+  RETURN NEW;
 END;
 $$;
 ALTER FUNCTION public.update_timestamp() OWNER TO postgres;
@@ -85,13 +85,13 @@ SET default_table_access_method = heap;
 
 -- Name: ai_review_analysis; Type: TABLE
 CREATE TABLE public.ai_review_analysis (
-    id bigint NOT NULL,
-    prompt_text text NOT NULL,
-    input_json jsonb NOT NULL,
-    output_json jsonb NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    user_id bigint NOT NULL,
-    review_post_id bigint NOT NULL
+  id bigint NOT NULL,
+  prompt_text text NOT NULL,
+  input_json jsonb NOT NULL,
+  output_json jsonb NOT NULL,
+  created_at timestamp with time zone NOT NULL,
+  user_id bigint NOT NULL,
+  review_post_id bigint NOT NULL
 );
 ALTER TABLE public.ai_review_analysis OWNER TO postgres;
 CREATE SEQUENCE public.ai_review_analysis_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -100,11 +100,11 @@ ALTER SEQUENCE public.ai_review_analysis_id_seq OWNED BY public.ai_review_analys
 
 -- Name: ai_review_hashtags; Type: TABLE
 CREATE TABLE public.ai_review_hashtags (
-    id bigint NOT NULL,
-    name character varying(100) NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    review_analysis_id bigint NOT NULL,
-    review_style_id bigint
+  id bigint NOT NULL,
+  name character varying(100) NOT NULL,
+  created_at timestamp with time zone NOT NULL,
+  review_analysis_id bigint NOT NULL,
+  review_style_id bigint
 );
 ALTER TABLE public.ai_review_hashtags OWNER TO postgres;
 CREATE SEQUENCE public.ai_review_hashtags_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -113,14 +113,14 @@ ALTER SEQUENCE public.ai_review_hashtags_id_seq OWNED BY public.ai_review_hashta
 
 -- Name: ai_review_styles; Type: TABLE
 CREATE TABLE public.ai_review_styles (
-    id bigint NOT NULL,
-    name character varying(150) NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    review_analysis_id bigint NOT NULL,
-    tone_code character varying(50),
-    is_trendy boolean DEFAULT false,
-    description text,
-    embedding public.vector(1536)
+  id bigint NOT NULL,
+  name character varying(150) NOT NULL,
+  created_at timestamp with time zone NOT NULL,
+  review_analysis_id bigint NOT NULL,
+  tone_code character varying(50),
+  is_trendy boolean DEFAULT false,
+  description text,
+  embedding public.vector(1536)
 );
 ALTER TABLE public.ai_review_styles OWNER TO postgres;
 CREATE SEQUENCE public.ai_review_styles_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -129,14 +129,14 @@ ALTER SEQUENCE public.ai_review_styles_id_seq OWNED BY public.ai_review_styles.i
 
 -- Name: chat_memories; Type: TABLE
 CREATE TABLE public.chat_memories (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    agent_name character varying(50) NOT NULL,
-    order_index integer NOT NULL,
-    content text NOT NULL,
-    token_usage bigint,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    role character varying(10) NOT NULL
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  agent_name character varying(50) NOT NULL,
+  order_index integer NOT NULL,
+  content text NOT NULL,
+  token_usage bigint,
+  created_at timestamp with time zone DEFAULT now() NOT NULL,
+  role character varying(10) NOT NULL
 );
 ALTER TABLE public.chat_memories OWNER TO postgres;
 CREATE SEQUENCE public.chat_memories_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -145,15 +145,15 @@ ALTER SEQUENCE public.chat_memories_id_seq OWNED BY public.chat_memories.id;
 
 -- Name: chat_memory_vectors; Type: TABLE
 CREATE TABLE public.chat_memory_vectors (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    agent_name character varying(50) NOT NULL,
-    order_index bigint NOT NULL,
-    content text NOT NULL,
-    token_usage bigint,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    role character varying(10) NOT NULL,
-    embedding public.vector(1536)
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  agent_name character varying(50) NOT NULL,
+  order_index bigint NOT NULL,
+  content text NOT NULL,
+  token_usage bigint,
+  created_at timestamp with time zone DEFAULT now() NOT NULL,
+  role character varying(10) NOT NULL,
+  embedding public.vector(1536)
 );
 ALTER TABLE public.chat_memory_vectors OWNER TO postgres;
 CREATE SEQUENCE public.chat_memory_vectors_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -162,12 +162,12 @@ ALTER SEQUENCE public.chat_memory_vectors_id_seq OWNED BY public.chat_memory_vec
 
 -- Name: checklist_items; Type: TABLE
 CREATE TABLE public.checklist_items (
-    id bigint NOT NULL,
-    checklist_id bigint NOT NULL,
-    content text NOT NULL,
-    category public.checklist_category NOT NULL,
-    is_checked boolean NOT NULL,
-    created_at timestamp with time zone NOT NULL
+  id bigint NOT NULL,
+  checklist_id bigint NOT NULL,
+  content text NOT NULL,
+  category public.checklist_category NOT NULL,
+  is_checked boolean NOT NULL,
+  created_at timestamp with time zone NOT NULL
 );
 ALTER TABLE public.checklist_items OWNER TO postgres;
 CREATE SEQUENCE public.checklist_items_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -176,10 +176,10 @@ ALTER SEQUENCE public.checklist_items_id_seq OWNED BY public.checklist_items.id;
 
 -- Name: checklists; Type: TABLE
 CREATE TABLE public.checklists (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    day_index smallint,
-    created_at timestamp with time zone
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  day_index smallint,
+  created_at timestamp with time zone
 );
 ALTER TABLE public.checklists OWNER TO postgres;
 CREATE SEQUENCE public.checklists_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -188,11 +188,11 @@ ALTER SEQUENCE public.checklists_id_seq OWNED BY public.checklists.id;
 
 -- Name: current_activities; Type: TABLE
 CREATE TABLE public.current_activities (
-    id bigint NOT NULL,
-    travel_place_id bigint NOT NULL,
-    actual_cost numeric(19,2),
-    memo text,
-    ended_at timestamp with time zone
+  id bigint NOT NULL,
+  travel_place_id bigint NOT NULL,
+  actual_cost numeric(19,2),
+  memo text,
+  ended_at timestamp with time zone
 );
 ALTER TABLE public.current_activities OWNER TO postgres;
 CREATE SEQUENCE public.current_activities_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -201,31 +201,31 @@ ALTER SEQUENCE public.current_activities_id_seq OWNED BY public.current_activiti
 
 -- Name: hotel_bookings; Type: TABLE
 CREATE TABLE public.hotel_bookings (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    external_booking_id character varying(100),
-    hotel_id bigint NOT NULL,
-    room_type_id bigint NOT NULL,
-    rate_plan_id bigint NOT NULL,
-    checkin_date date NOT NULL,
-    checkout_date date NOT NULL,
-    nights integer NOT NULL,
-    adults_count integer NOT NULL,
-    children_count integer NOT NULL,
-    currency character(3) NOT NULL,
-    total_price numeric(12,2) NOT NULL,
-    tax_amount numeric(12,2) NOT NULL,
-    fee_amount numeric(12,2) NOT NULL,
-    status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
-    payment_status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
-    guest_name character varying(200),
-    guest_email character varying(100),
-    guest_phone character varying(50),
-    provider_booking_meta jsonb,
-    booked_at timestamp with time zone NOT NULL,
-    cancelled_at timestamp with time zone,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  external_booking_id character varying(100),
+  hotel_id bigint NOT NULL,
+  room_type_id bigint NOT NULL,
+  rate_plan_id bigint NOT NULL,
+  checkin_date date NOT NULL,
+  checkout_date date NOT NULL,
+  nights integer NOT NULL,
+  adults_count integer NOT NULL,
+  children_count integer NOT NULL,
+  currency character(3) NOT NULL,
+  total_price numeric(12,2) NOT NULL,
+  tax_amount numeric(12,2) NOT NULL,
+  fee_amount numeric(12,2) NOT NULL,
+  status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
+  payment_status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
+  guest_name character varying(200),
+  guest_email character varying(100),
+  guest_phone character varying(50),
+  provider_booking_meta jsonb,
+  booked_at timestamp with time zone NOT NULL,
+  cancelled_at timestamp with time zone,
+  created_at timestamp with time zone NOT NULL,
+  updated_at timestamp with time zone NOT NULL
 );
 ALTER TABLE public.hotel_bookings OWNER TO postgres;
 CREATE SEQUENCE public.hotel_bookings_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -234,156 +234,156 @@ ALTER SEQUENCE public.hotel_bookings_id_seq OWNED BY public.hotel_bookings.id;
 
 -- Name: hotel_rate_plan_prices; Type: TABLE
 CREATE TABLE public.hotel_rate_plan_prices (
-    id bigint NOT NULL,
-    rate_plan_id bigint NOT NULL,
-    stay_date date NOT NULL,
-    price numeric(12,2) NOT NULL,
-    tax_amount numeric(12,2) DEFAULT 0 NOT NULL,
-    fee_amount numeric(12,2) DEFAULT 0 NOT NULL,
-    remaining_rooms integer,
-    is_closed boolean DEFAULT false NOT NULL,
-    fetched_at timestamp with time zone DEFAULT now() NOT NULL
+  id bigint NOT NULL,
+  rate_plan_id bigint NOT NULL,
+  stay_date date NOT NULL,
+  price numeric(12,2) NOT NULL,
+  tax_amount numeric(12,2) DEFAULT 0 NOT NULL,
+  fee_amount numeric(12,2) DEFAULT 0 NOT NULL,
+  remaining_rooms integer,
+  is_closed boolean DEFAULT false NOT NULL,
+  fetched_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.hotel_rate_plan_prices OWNER TO postgres;
 ALTER TABLE public.hotel_rate_plan_prices ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.hotel_rate_plan_prices_rate_plan_price_id_seq
-    START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
+  SEQUENCE NAME public.hotel_rate_plan_prices_rate_plan_price_id_seq
+  START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
 );
 
 
 -- Name: hotel_rate_plans; Type: TABLE
 CREATE TABLE public.hotel_rate_plans (
-    id bigint NOT NULL,
-    hotel_id bigint NOT NULL,
-    room_type_id bigint NOT NULL,
-    external_rate_plan_id character varying(100) NOT NULL,
-    name character varying(200),
-    description text,
-    meal_plan character varying(50),
-    includes_breakfast boolean DEFAULT false NOT NULL,
-    refundable_type character varying(20) DEFAULT 'REFUNDABLE'::character varying NOT NULL,
-    free_cancel_until timestamp with time zone,
-    payment_type character varying(20) DEFAULT 'PREPAID'::character varying NOT NULL,
-    requires_full_prepayment boolean DEFAULT false NOT NULL,
-    base_occupancy integer DEFAULT 2 NOT NULL,
-    max_occupancy integer DEFAULT 2 NOT NULL,
-    currency character(3) NOT NULL,
-    tax_included boolean DEFAULT true NOT NULL,
-    fee_included boolean DEFAULT true NOT NULL,
-    base_price numeric(12,2),
-    provider_rate_meta jsonb,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+  id bigint NOT NULL,
+  hotel_id bigint NOT NULL,
+  room_type_id bigint NOT NULL,
+  external_rate_plan_id character varying(100) NOT NULL,
+  name character varying(200),
+  description text,
+  meal_plan character varying(50),
+  includes_breakfast boolean DEFAULT false NOT NULL,
+  refundable_type character varying(20) DEFAULT 'REFUNDABLE'::character varying NOT NULL,
+  free_cancel_until timestamp with time zone,
+  payment_type character varying(20) DEFAULT 'PREPAID'::character varying NOT NULL,
+  requires_full_prepayment boolean DEFAULT false NOT NULL,
+  base_occupancy integer DEFAULT 2 NOT NULL,
+  max_occupancy integer DEFAULT 2 NOT NULL,
+  currency character(3) NOT NULL,
+  tax_included boolean DEFAULT true NOT NULL,
+  fee_included boolean DEFAULT true NOT NULL,
+  base_price numeric(12,2),
+  provider_rate_meta jsonb,
+  created_at timestamp with time zone DEFAULT now() NOT NULL,
+  updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.hotel_rate_plans OWNER TO postgres;
 ALTER TABLE public.hotel_rate_plans ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.hotel_rate_plans_rate_plan_id_seq
-    START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
+  SEQUENCE NAME public.hotel_rate_plans_rate_plan_id_seq
+  START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
 );
 
 
 -- Name: hotel_rooms; Type: TABLE
 CREATE TABLE public.hotel_rooms (
-    id bigint NOT NULL,
-    hotel_id bigint NOT NULL,
-    external_room_type_id character varying(100) NOT NULL,
-    name character varying(200) NOT NULL,
-    name_local character varying(200),
-    description text,
-    max_occupancy integer NOT NULL,
-    adults_max integer,
-    children_max integer,
-    room_size_sqm numeric(5,1),
-    bed_type character varying(50),
-    bed_count integer,
-    extra_bed_available boolean DEFAULT false NOT NULL,
-    has_private_bathroom boolean DEFAULT true NOT NULL,
-    has_bathtub boolean DEFAULT false NOT NULL,
-    has_shower_only boolean DEFAULT false NOT NULL,
-    has_kitchenette boolean DEFAULT false NOT NULL,
-    has_washing_machine boolean DEFAULT false NOT NULL,
-    is_smoking_allowed boolean DEFAULT false NOT NULL,
-    is_accessible_room boolean DEFAULT false NOT NULL,
-    connecting_available boolean DEFAULT false NOT NULL,
-    provider_room_meta jsonb,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+  id bigint NOT NULL,
+  hotel_id bigint NOT NULL,
+  external_room_type_id character varying(100) NOT NULL,
+  name character varying(200) NOT NULL,
+  name_local character varying(200),
+  description text,
+  max_occupancy integer NOT NULL,
+  adults_max integer,
+  children_max integer,
+  room_size_sqm numeric(5,1),
+  bed_type character varying(50),
+  bed_count integer,
+  extra_bed_available boolean DEFAULT false NOT NULL,
+  has_private_bathroom boolean DEFAULT true NOT NULL,
+  has_bathtub boolean DEFAULT false NOT NULL,
+  has_shower_only boolean DEFAULT false NOT NULL,
+  has_kitchenette boolean DEFAULT false NOT NULL,
+  has_washing_machine boolean DEFAULT false NOT NULL,
+  is_smoking_allowed boolean DEFAULT false NOT NULL,
+  is_accessible_room boolean DEFAULT false NOT NULL,
+  connecting_available boolean DEFAULT false NOT NULL,
+  provider_room_meta jsonb,
+  created_at timestamp with time zone DEFAULT now() NOT NULL,
+  updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.hotel_rooms OWNER TO postgres;
 ALTER TABLE public.hotel_rooms ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.hotel_rooms_room_type_id_seq
-    START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
+  SEQUENCE NAME public.hotel_rooms_room_type_id_seq
+  START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
 );
 
 
 -- Name: hotels; Type: TABLE
 CREATE TABLE public.hotels (
-    id bigint NOT NULL,
-    external_hotel_id character varying(100) NOT NULL,
-    name character varying(200) NOT NULL,
-    name_local character varying(200),
-    star_rating numeric(2,1),
-    rating_score numeric(3,2),
-    review_count integer,
-    description text,
-    country_code character(2) NOT NULL,
-    city character varying(100),
-    district character varying(100),
-    neighborhood character varying(100),
-    address_line1 character varying(200),
-    address_line2 character varying(200),
-    postal_code character varying(20),
-    latitude numeric(10,7),
-    longitude numeric(10,7),
-    near_metro boolean DEFAULT false NOT NULL,
-    metro_station_name character varying(100),
-    metro_distance_m integer,
-    airport_distance_km numeric(5,2),
-    has_airport_bus boolean DEFAULT false NOT NULL,
-    checkin_from time without time zone,
-    checkout_until time without time zone,
-    timezone character varying(50),
-    has_24h_frontdesk boolean DEFAULT true NOT NULL,
-    has_english_staff boolean DEFAULT false NOT NULL,
-    has_japanese_staff boolean DEFAULT false NOT NULL,
-    has_chinese_staff boolean DEFAULT false NOT NULL,
-    has_free_wifi boolean DEFAULT true NOT NULL,
-    has_breakfast_restaurant boolean DEFAULT false NOT NULL,
-    has_parking boolean DEFAULT false NOT NULL,
-    is_family_friendly boolean DEFAULT false NOT NULL,
-    is_pet_friendly boolean DEFAULT false NOT NULL,
-    phone character varying(50),
-    email character varying(100),
-    website_url character varying(300),
-    provider_tags jsonb,
-    provider_raw_meta jsonb,
-    llm_summary text,
-    llm_tags jsonb,
-    llm_last_updated_at timestamp with time zone,
-    is_active boolean DEFAULT true NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+  id bigint NOT NULL,
+  external_hotel_id character varying(100) NOT NULL,
+  name character varying(200) NOT NULL,
+  name_local character varying(200),
+  star_rating numeric(2,1),
+  rating_score numeric(3,2),
+  review_count integer,
+  description text,
+  country_code character(2) NOT NULL,
+  city character varying(100),
+  district character varying(100),
+  neighborhood character varying(100),
+  address_line1 character varying(200),
+  address_line2 character varying(200),
+  postal_code character varying(20),
+  latitude numeric(10,7),
+  longitude numeric(10,7),
+  near_metro boolean DEFAULT false NOT NULL,
+  metro_station_name character varying(100),
+  metro_distance_m integer,
+  airport_distance_km numeric(5,2),
+  has_airport_bus boolean DEFAULT false NOT NULL,
+  checkin_from time without time zone,
+  checkout_until time without time zone,
+  timezone character varying(50),
+  has_24h_frontdesk boolean DEFAULT true NOT NULL,
+  has_english_staff boolean DEFAULT false NOT NULL,
+  has_japanese_staff boolean DEFAULT false NOT NULL,
+  has_chinese_staff boolean DEFAULT false NOT NULL,
+  has_free_wifi boolean DEFAULT true NOT NULL,
+  has_breakfast_restaurant boolean DEFAULT false NOT NULL,
+  has_parking boolean DEFAULT false NOT NULL,
+  is_family_friendly boolean DEFAULT false NOT NULL,
+  is_pet_friendly boolean DEFAULT false NOT NULL,
+  phone character varying(50),
+  email character varying(100),
+  website_url character varying(300),
+  provider_tags jsonb,
+  provider_raw_meta jsonb,
+  llm_summary text,
+  llm_tags jsonb,
+  llm_last_updated_at timestamp with time zone,
+  is_active boolean DEFAULT true NOT NULL,
+  created_at timestamp with time zone DEFAULT now() NOT NULL,
+  updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.hotels OWNER TO postgres;
 ALTER TABLE public.hotels ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.hotels_hotel_id_seq
-    START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
+  SEQUENCE NAME public.hotels_hotel_id_seq
+  START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
 );
 
 
 -- Name: image_places; Type: TABLE
 CREATE TABLE public.image_places (
-    id bigint NOT NULL,
-    name character varying(255) NOT NULL,
-    content character varying(1000),
-    lat numeric(10,7) NOT NULL,
-    lng numeric(10,7) NOT NULL,
-    address character varying(500) NOT NULL,
-    place_type character varying(500) NOT NULL,
-    internal_original_url text,
-    internal_thumbnail_url text,
-    external_image_url text,
-    image_status public.image_status_enum DEFAULT 'PENDING'::public.image_status_enum NOT NULL
+  id bigint NOT NULL,
+  name character varying(255) NOT NULL,
+  content character varying(1000),
+  lat numeric(10,7) NOT NULL,
+  lng numeric(10,7) NOT NULL,
+  address character varying(500) NOT NULL,
+  place_type character varying(500) NOT NULL,
+  internal_original_url text,
+  internal_thumbnail_url text,
+  external_image_url text,
+  image_status public.image_status_enum DEFAULT 'PENDING'::public.image_status_enum NOT NULL
 );
 ALTER TABLE public.image_places OWNER TO postgres;
 CREATE SEQUENCE public.places_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -392,11 +392,11 @@ ALTER SEQUENCE public.places_id_seq OWNED BY public.image_places.id;
 
 -- Name: image_search_candidates; Type: TABLE
 CREATE TABLE public.image_search_candidates (
-    id bigint NOT NULL,
-    image_search_place_id bigint NOT NULL,
-    place_id bigint NOT NULL,
-    is_selected boolean DEFAULT false NOT NULL,
-    rank bigint NOT NULL
+  id bigint NOT NULL,
+  image_search_place_id bigint NOT NULL,
+  place_id bigint NOT NULL,
+  is_selected boolean DEFAULT false NOT NULL,
+  rank bigint NOT NULL
 );
 ALTER TABLE public.image_search_candidates OWNER TO postgres;
 CREATE SEQUENCE public.image_search_results_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -405,10 +405,10 @@ ALTER SEQUENCE public.image_search_results_id_seq OWNED BY public.image_search_c
 
 -- Name: image_search_sessions; Type: TABLE
 CREATE TABLE public.image_search_sessions (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    action_type public.image_action_type NOT NULL
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  created_at timestamp with time zone NOT NULL,
+  action_type public.image_action_type NOT NULL
 );
 ALTER TABLE public.image_search_sessions OWNER TO postgres;
 CREATE SEQUENCE public.image_search_places_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -417,19 +417,19 @@ ALTER SEQUENCE public.image_search_places_id_seq OWNED BY public.image_search_se
 
 -- Name: payment_transactions; Type: TABLE
 CREATE TABLE public.payment_transactions (
-    id bigint NOT NULL,
-    hotel_booking_id bigint NOT NULL,
-    payment_method character varying(30) NOT NULL,
-    provider_payment_id character varying(100),
-    amount numeric(19,2) NOT NULL,
-    currency character(3) NOT NULL,
-    status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
-    requested_at timestamp with time zone NOT NULL,
-    completed_at timestamp with time zone,
-    cancelled_at timestamp with time zone,
-    raw_response jsonb,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+  id bigint NOT NULL,
+  hotel_booking_id bigint NOT NULL,
+  payment_method character varying(30) NOT NULL,
+  provider_payment_id character varying(100),
+  amount numeric(19,2) NOT NULL,
+  currency character(3) NOT NULL,
+  status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
+  requested_at timestamp with time zone NOT NULL,
+  completed_at timestamp with time zone,
+  cancelled_at timestamp with time zone,
+  raw_response jsonb,
+  created_at timestamp with time zone NOT NULL,
+  updated_at timestamp with time zone NOT NULL
 );
 ALTER TABLE public.payment_transactions OWNER TO postgres;
 CREATE SEQUENCE public.payment_transactions_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -438,11 +438,11 @@ ALTER SEQUENCE public.payment_transactions_id_seq OWNED BY public.payment_transa
 
 -- Name: plan_days; Type: TABLE
 CREATE TABLE public.plan_days (
-    id bigint NOT NULL,
-    travel_plan_id bigint,
-    day_index smallint,
-    title character varying(50),
-    plan_date date
+  id bigint NOT NULL,
+  travel_plan_id bigint,
+  day_index smallint,
+  title character varying(50),
+  plan_date date
 );
 ALTER TABLE public.plan_days OWNER TO postgres;
 CREATE SEQUENCE public.travel_days_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -451,16 +451,16 @@ ALTER SEQUENCE public.travel_days_id_seq OWNED BY public.plan_days.id;
 
 -- Name: plan_places; Type: TABLE
 CREATE TABLE public.plan_places (
-    id bigint NOT NULL,
-    day_id bigint NOT NULL,
-    title character varying(150) NOT NULL,
-    start_at timestamp with time zone,
-    end_at timestamp with time zone,
-    place_name character varying(64),
-    address character varying(200),
-    lat numeric(10,7),
-    lng numeric(10,7),
-    expected_cost numeric(19,2)
+  id bigint NOT NULL,
+  day_id bigint NOT NULL,
+  title character varying(150) NOT NULL,
+  start_at timestamp with time zone,
+  end_at timestamp with time zone,
+  place_name character varying(64),
+  address character varying(200),
+  lat numeric(10,7),
+  lng numeric(10,7),
+  expected_cost numeric(19,2)
 );
 ALTER TABLE public.plan_places OWNER TO postgres;
 CREATE SEQUENCE public.travel_places_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -469,11 +469,11 @@ ALTER SEQUENCE public.travel_places_id_seq OWNED BY public.plan_places.id;
 
 -- Name: plan_snapshots; Type: TABLE
 CREATE TABLE public.plan_snapshots (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    version_no integer NOT NULL,
-    snapshot_json json NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  version_no integer NOT NULL,
+  snapshot_json json NOT NULL,
+  created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.plan_snapshots OWNER TO postgres;
 CREATE SEQUENCE public.travel_plan_snapshots_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -482,14 +482,14 @@ ALTER SEQUENCE public.travel_plan_snapshots_id_seq OWNED BY public.plan_snapshot
 
 -- Name: plans; Type: TABLE
 CREATE TABLE public.plans (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    budget numeric(19,2) NOT NULL,
-    start_date date,
-    end_date date,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    is_ended boolean
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  budget numeric(19,2) NOT NULL,
+  start_date date,
+  end_date date,
+  created_at timestamp with time zone,
+  updated_at timestamp with time zone,
+  is_ended boolean
 );
 ALTER TABLE public.plans OWNER TO postgres;
 CREATE SEQUENCE public.travel_plans_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -498,9 +498,9 @@ ALTER SEQUENCE public.travel_plans_id_seq OWNED BY public.plans.id;
 
 -- Name: review_hashtag_groups; Type: TABLE
 CREATE TABLE public.review_hashtag_groups (
-    id bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    review_post_id bigint NOT NULL
+  id bigint NOT NULL,
+  created_at timestamp with time zone NOT NULL,
+  review_post_id bigint NOT NULL
 );
 ALTER TABLE public.review_hashtag_groups OWNER TO postgres;
 CREATE SEQUENCE public.review_hashtag_groups_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -509,10 +509,10 @@ ALTER SEQUENCE public.review_hashtag_groups_id_seq OWNED BY public.review_hashta
 
 -- Name: review_hashtags; Type: TABLE
 CREATE TABLE public.review_hashtags (
-    id bigint NOT NULL,
-    name character varying(100) NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    group_id bigint NOT NULL
+  id bigint NOT NULL,
+  name character varying(100) NOT NULL,
+  created_at timestamp with time zone NOT NULL,
+  group_id bigint NOT NULL
 );
 ALTER TABLE public.review_hashtags OWNER TO postgres;
 CREATE SEQUENCE public.review_hashtags_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -521,9 +521,9 @@ ALTER SEQUENCE public.review_hashtags_id_seq OWNED BY public.review_hashtags.id;
 
 -- Name: review_photo_groups; Type: TABLE
 CREATE TABLE public.review_photo_groups (
-    id bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    review_post_id bigint NOT NULL
+  id bigint NOT NULL,
+  created_at timestamp with time zone NOT NULL,
+  review_post_id bigint NOT NULL
 );
 ALTER TABLE public.review_photo_groups OWNER TO postgres;
 CREATE SEQUENCE public.review_photo_groups_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -532,11 +532,11 @@ ALTER SEQUENCE public.review_photo_groups_id_seq OWNED BY public.review_photo_gr
 
 -- Name: review_photos; Type: TABLE
 CREATE TABLE public.review_photos (
-    id bigint NOT NULL,
-    file_url text NOT NULL,
-    order_index integer NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    group_id bigint NOT NULL
+  id bigint NOT NULL,
+  file_url text NOT NULL,
+  order_index integer NOT NULL,
+  created_at timestamp with time zone NOT NULL,
+  group_id bigint NOT NULL
 );
 ALTER TABLE public.review_photos OWNER TO postgres;
 CREATE SEQUENCE public.review_photos_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -545,13 +545,13 @@ ALTER SEQUENCE public.review_photos_id_seq OWNED BY public.review_photos.id;
 
 -- Name: review_posts; Type: TABLE
 CREATE TABLE public.review_posts (
-    id bigint NOT NULL,
-    content text,
-    is_posted boolean DEFAULT false NOT NULL,
-    review_post_url text,
-    created_at timestamp with time zone NOT NULL,
-    travel_plan_id bigint NOT NULL,
-    review_style_id bigint
+  id bigint NOT NULL,
+  content text,
+  is_posted boolean DEFAULT false NOT NULL,
+  review_post_url text,
+  created_at timestamp with time zone NOT NULL,
+  travel_plan_id bigint NOT NULL,
+  review_style_id bigint
 );
 ALTER TABLE public.review_posts OWNER TO postgres;
 CREATE SEQUENCE public.review_posts_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -560,16 +560,16 @@ ALTER SEQUENCE public.review_posts_id_seq OWNED BY public.review_posts.id;
 
 -- Name: sns_tokens; Type: TABLE
 CREATE TABLE public.sns_tokens (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    user_access_token text NOT NULL,
-    page_access_token text,
-    expires_at timestamp with time zone,
-    account_type character varying(50),
-    ig_business_account character varying(100),
-    creator_account character varying(100),
-    publish_account character varying(100),
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  user_access_token text NOT NULL,
+  page_access_token text,
+  expires_at timestamp with time zone,
+  account_type character varying(50),
+  ig_business_account character varying(100),
+  creator_account character varying(100),
+  publish_account character varying(100),
+  created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.sns_tokens OWNER TO postgres;
 CREATE SEQUENCE public.sns_tokens_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -578,11 +578,11 @@ ALTER SEQUENCE public.sns_tokens_id_seq OWNED BY public.sns_tokens.id;
 
 -- Name: toilets; Type: TABLE
 CREATE TABLE public.toilets (
-    id bigint NOT NULL,
-    name character varying(255) NOT NULL,
-    lat numeric(10,7) NOT NULL,
-    lng numeric(10,7) NOT NULL,
-    address character varying(500) NOT NULL
+  id bigint NOT NULL,
+  name character varying(255) NOT NULL,
+  lat numeric(10,7) NOT NULL,
+  lng numeric(10,7) NOT NULL,
+  address character varying(500) NOT NULL
 );
 ALTER TABLE public.toilets OWNER TO postgres;
 CREATE SEQUENCE public.toilets_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -591,33 +591,33 @@ ALTER SEQUENCE public.toilets_id_seq OWNED BY public.toilets.id;
 
 -- Name: travel_place_categories; Type: TABLE
 CREATE TABLE public.travel_place_categories (
-    code text NOT NULL,
-    name text NOT NULL,
-    parent_code text,
-    level integer NOT NULL,
-    category_type text
+  code text NOT NULL,
+  name text NOT NULL,
+  parent_code text,
+  level integer NOT NULL,
+  category_type text
 );
 ALTER TABLE public.travel_place_categories OWNER TO postgres;
 
 
 -- Name: travel_places (2nd table, renamed from original for clarity); Type: TABLE
 CREATE TABLE public.travel_places (
-    id bigint NOT NULL,
-    content_id text NOT NULL,
-    title text NOT NULL,
-    address text,
-    tel text,
-    first_image text,
-    first_image2 text,
-    lat double precision,
-    lng double precision,
-    category_code text NOT NULL,
-    description text,
-    tags jsonb,
-    embedding public.vector(3072),
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
-    detail_info text
+  id bigint NOT NULL,
+  content_id text NOT NULL,
+  title text NOT NULL,
+  address text,
+  tel text,
+  first_image text,
+  first_image2 text,
+  lat double precision,
+  lng double precision,
+  category_code text NOT NULL,
+  description text,
+  tags jsonb,
+  embedding public.vector(3072),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  detail_info text
 );
 ALTER TABLE public.travel_places OWNER TO postgres;
 CREATE SEQUENCE public.travel_places_id_seq1 START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -626,10 +626,10 @@ ALTER SEQUENCE public.travel_places_id_seq1 OWNED BY public.travel_places.id;
 
 -- Name: user_identities; Type: TABLE
 CREATE TABLE public.user_identities (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    provider character varying(50) NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+  id bigint NOT NULL,
+  user_id bigint NOT NULL,
+  provider character varying(50) NOT NULL,
+  created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.user_identities OWNER TO postgres;
 CREATE SEQUENCE public.user_identities_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -638,14 +638,14 @@ ALTER SEQUENCE public.user_identities_id_seq OWNED BY public.user_identities.id;
 
 -- Name: users; Type: TABLE
 CREATE TABLE public.users (
-    id bigint NOT NULL,
-    is_active boolean,
-    last_login_at timestamp with time zone,
-    name character varying(50),
-    email character varying(1000),
-    profile_image_url character varying(1000),
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone
+  id bigint NOT NULL,
+  is_active boolean,
+  last_login_at timestamp with time zone,
+  name character varying(50),
+  email character varying(1000),
+  profile_image_url character varying(1000),
+  created_at timestamp with time zone NOT NULL,
+  updated_at timestamp with time zone
 );
 ALTER TABLE public.users OWNER TO postgres;
 CREATE SEQUENCE public.users_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -653,55 +653,55 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 -- Name: hotels; Type: TABLE
 CREATE TABLE public.hotels (
-    id bigint NOT NULL,
-    external_hotel_id character varying(100) NOT NULL,
-    name character varying(200) NOT NULL,
-    name_local character varying(200),
-    star_rating numeric(2,1),
-    rating_score numeric(3,2),
-    review_count integer,
-    description text,
-    country_code character(2) NOT NULL,
-    city character varying(100),
-    district character varying(100),
-    neighborhood character varying(100),
-    address_line1 character varying(200),
-    address_line2 character varying(200),
-    postal_code character varying(20),
-    latitude numeric(10,7),
-    longitude numeric(10,7),
-    near_metro boolean DEFAULT false NOT NULL,
-    metro_station_name character varying(100),
-    metro_distance_m integer,
-    airport_distance_km numeric(5,2),
-    has_airport_bus boolean DEFAULT false NOT NULL,
-    checkin_from time without time zone,
-    checkout_until time without time zone,
-    timezone character varying(50),
-    has_24h_frontdesk boolean DEFAULT true NOT NULL,
-    has_english_staff boolean DEFAULT false NOT NULL,
-    has_japanese_staff boolean DEFAULT false NOT NULL,
-    has_chinese_staff boolean DEFAULT false NOT NULL,
-    has_free_wifi boolean DEFAULT true NOT NULL,
-    has_breakfast_restaurant boolean DEFAULT false NOT NULL,
-    has_parking boolean DEFAULT false NOT NULL,
-    is_family_friendly boolean DEFAULT false NOT NULL,
-    is_pet_friendly boolean DEFAULT false NOT NULL,
-    phone character varying(50),
-    email character varying(100),
-    website_url character varying(300),
-    provider_tags jsonb,
-    provider_raw_meta jsonb,
-    llm_summary text,
-    llm_tags jsonb,
-    llm_last_updated_at timestamp with time zone,
-    is_active boolean DEFAULT true NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+  id bigint NOT NULL,
+  external_hotel_id character varying(100) NOT NULL,
+  name character varying(200) NOT NULL,
+  name_local character varying(200),
+  star_rating numeric(2,1),
+  rating_score numeric(3,2),
+  review_count integer,
+  description text,
+  country_code character(2) NOT NULL,
+  city character varying(100),
+  district character varying(100),
+  neighborhood character varying(100),
+  address_line1 character varying(200),
+  address_line2 character varying(200),
+  postal_code character varying(20),
+  latitude numeric(10,7),
+  longitude numeric(10,7),
+  near_metro boolean DEFAULT false NOT NULL,
+  metro_station_name character varying(100),
+  metro_distance_m integer,
+  airport_distance_km numeric(5,2),
+  has_airport_bus boolean DEFAULT false NOT NULL,
+  checkin_from time without time zone,
+  checkout_until time without time zone,
+  timezone character varying(50),
+  has_24h_frontdesk boolean DEFAULT true NOT NULL,
+  has_english_staff boolean DEFAULT false NOT NULL,
+  has_japanese_staff boolean DEFAULT false NOT NULL,
+  has_chinese_staff boolean DEFAULT false NOT NULL,
+  has_free_wifi boolean DEFAULT true NOT NULL,
+  has_breakfast_restaurant boolean DEFAULT false NOT NULL,
+  has_parking boolean DEFAULT false NOT NULL,
+  is_family_friendly boolean DEFAULT false NOT NULL,
+  is_pet_friendly boolean DEFAULT false NOT NULL,
+  phone character varying(50),
+  email character varying(100),
+  website_url character varying(300),
+  provider_tags jsonb,
+  provider_raw_meta jsonb,
+  llm_summary text,
+  llm_tags jsonb,
+  llm_last_updated_at timestamp with time zone,
+  is_active boolean DEFAULT true NOT NULL,
+  created_at timestamp with time zone DEFAULT now() NOT NULL,
+  updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 ALTER TABLE public.hotels OWNER TO postgres;
 ALTER TABLE public.hotels ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.hotels_hotel_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
+  SEQUENCE NAME public.hotels_hotel_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
 );
 
 
