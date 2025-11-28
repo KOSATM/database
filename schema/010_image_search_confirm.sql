@@ -191,9 +191,9 @@ CREATE SEQUENCE public.travel_plan_snapshots_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
 ALTER SEQUENCE public.travel_plan_snapshots_id_seq OWNER TO postgres;
 
-CREATE SEQUENCE public.travel_plans_id_seq
+CREATE SEQUENCE public.plans_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-ALTER SEQUENCE public.travel_plans_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.plans_id_seq OWNER TO postgres;
 
 CREATE SEQUENCE public.user_identities_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -542,8 +542,9 @@ ALTER TABLE public.plan_snapshots OWNER TO postgres;
 
 -- Name: plans; Type: TABLE
 CREATE TABLE public.plans (
-    id bigint DEFAULT nextval('public.travel_plans_id_seq'::regclass) NOT NULL,
+    id bigint DEFAULT nextval('public.plans_id_seq'::regclass) NOT NULL,
     user_id bigint NOT NULL,
+    title VARCHAR(100),
     budget numeric(19,2) NOT NULL,
     start_date date,
     end_date date,
