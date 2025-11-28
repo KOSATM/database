@@ -143,9 +143,9 @@ CREATE SEQUENCE public.payment_transactions_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
 ALTER SEQUENCE public.payment_transactions_id_seq OWNER TO postgres;
 
-CREATE SEQUENCE public.places_id_seq
+CREATE SEQUENCE public.image_places_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-ALTER SEQUENCE public.places_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.image_places_id_seq OWNER TO postgres;
 
 CREATE SEQUENCE public.review_hashtag_groups_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -175,9 +175,9 @@ CREATE SEQUENCE public.toilets_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
 ALTER SEQUENCE public.toilets_id_seq OWNER TO postgres;
 
-CREATE SEQUENCE public.travel_days_id_seq
+CREATE SEQUENCE public.plan_days_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-ALTER SEQUENCE public.travel_days_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.plan_days_id_seq OWNER TO postgres;
 
 CREATE SEQUENCE public.travel_places_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -187,9 +187,9 @@ CREATE SEQUENCE public.travel_places_id_seq1
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
 ALTER SEQUENCE public.travel_places_id_seq1 OWNER TO postgres;
 
-CREATE SEQUENCE public.travel_plan_snapshots_id_seq
+CREATE SEQUENCE public.plan_snapshots_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-ALTER SEQUENCE public.travel_plan_snapshots_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.plan_snapshots_id_seq OWNER TO postgres;
 
 CREATE SEQUENCE public.plans_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
@@ -454,7 +454,7 @@ ALTER TABLE public.hotels OWNER TO postgres;
 
 -- Name: image_places; Type: TABLE
 CREATE TABLE public.image_places (
-    id bigint DEFAULT nextval('public.places_id_seq'::regclass) NOT NULL,
+    id bigint DEFAULT nextval('public.image_places_id_seq'::regclass) NOT NULL,
     name character varying(255) NOT NULL,
     content character varying(1000),
     lat numeric(10,7) NOT NULL,
