@@ -170,7 +170,7 @@ CREATE TABLE image_search_candidates (
 
 CREATE TABLE review_posts (
     id BIGSERIAL PRIMARY KEY,
-    content TEXT,
+    caption TEXT,
     is_posted BOOLEAN DEFAULT false NOT NULL,
     review_post_url TEXT,
     created_at TIMESTAMPTZ NOT NULL,
