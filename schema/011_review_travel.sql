@@ -2666,10 +2666,10 @@ CREATE TABLE image_search_sessions (
 CREATE TABLE image_search_candidates (
     id BIGSERIAL PRIMARY KEY,
     image_search_place_id BIGINT NOT NULL,
-    place_id BIGINT NOT NULL,
+    image_place_id BIGINT NOT NULL,
     is_selected BOOLEAN DEFAULT false NOT NULL,
     rank BIGINT NOT NULL,
-    FOREIGN KEY (place_id) REFERENCES image_places(id),
+    FOREIGN KEY (image_place_id) REFERENCES image_places(id),
     FOREIGN KEY (image_search_place_id) REFERENCES image_search_sessions(id)
 );
 CREATE TABLE hotels (
