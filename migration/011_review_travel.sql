@@ -27,7 +27,7 @@ ON DELETE SET NULL;
 
 ALTER TABLE review_photos RENAME COLUMN group_id to photo_group_id;
 ALTER TABLE review_hashtags RENAME COLUMN group_id to hashtag_group_id;
-ALTER TABLE review_analysis DROP COlUMN user_id;
+ALTER TABLE ai_review_analysis DROP COlUMN user_id;
 
 -- 카테고리 정규화 칼럼 추가 --
 ALTER TABLE travel_places
