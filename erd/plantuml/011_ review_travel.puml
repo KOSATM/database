@@ -1,0 +1,329 @@
+@startuml
+skinparam monochrome true
+skinparam defaultTextAlignment center
+
+title FULL DATABASE ERD (Find My Seoul)
+
+' -------------------------------------------------------------
+' USERS CLUSTER
+' -------------------------------------------------------------
+package "Users Cluster" {
+  entity users {
+    *id : bigint
+    --
+    is_active
+    last_login_at
+    name
+    email
+    profile_image_url
+    created_at
+    updated_at
+  }
+
+  entity user_identities {
+    *id : bigint
+    --
+    user_id : bigint
+    provider
+  }
+
+  entity sns_tokens {
+    *id : bigint
+    --
+    user_id : bigint
+    user_access_token
+    page_access_token
+    expires_at
+  }
+
+  users ||--o{ user_identities : has
+  users ||--o{ sns_tokens : has
+}
+
+' -------------------------------------------------------------
+newpage
+title TRAVEL PLAN CLUSTER
+' -------------------------------------------------------------
+package "Travel Plan Cluster" {
+  entity plans {
+    *id
+    user_id
+    budget
+    start_date
+    end_date
+  }
+
+  entity plan_days {
+    *id
+    travel_plan_id
+    day_index
+  }
+
+  entity plan_places {
+    *id
+    day_id
+    title
+  }
+
+  entity plan_snapshots {
+    *id
+    user_id
+    version_no
+    snapshot_json
+  }
+
+  entity current_activities {
+    *id
+    travel_place_id
+    actual_cost
+  }
+
+  users ||--o{ plans
+  plans ||--o{ plan_days
+  plan_days ||--o{ plan_places
+  plan_places ||--o{ current_activities
+  users ||--o{ plan_snapshots
+}
+
+' -------------------------------------------------------------
+newpage
+title TRAVEL PLACES CLUSTER
+' -------------------------------------------------------------
+package "Travel Places Cluster" {
+  entity travel_place_categories {
+    *code
+    name
+    parent_code
+    level
+  }
+
+  entity travel_places {
+    *id
+    content_id
+    title
+    category_code
+    lat
+    lng
+    embedding
+  }
+
+  travel_place_categories ||--o{ travel_places : category
+}
+
+' -------------------------------------------------------------
+newpage
+title REVIEW CLUSTER
+' -------------------------------------------------------------
+package "Review Cluster" {
+  entity review_posts {
+    *id
+    travel_plan_id
+    content
+    is_posted
+    review_style_id
+  }
+
+  entity review_photo_groups {
+    *id
+    review_post_id
+  }
+
+  entity review_photos {
+    *id
+    group_id
+    file_url
+    order_index
+  }
+
+  entity review_hashtag_groups {
+    *id
+    review_post_id
+  }
+
+  entity review_hashtags {
+    *id
+    group_id
+    name
+  }
+
+  plans ||--o{ review_posts
+  review_posts ||--|| review_photo_groups
+  review_photo_groups ||--o{ review_photos
+  review_posts ||--|| review_hashtag_groups
+  review_hashtag_groups ||--o{ review_hashtags
+}
+
+' -------------------------------------------------------------
+newpage
+title AI REVIEW CLUSTER
+' -------------------------------------------------------------
+package "AI Review Cluster" {
+
+  entity ai_review_analysis {
+    *id
+    user_id
+    review_post_id
+    input_json
+    output_json
+  }
+
+  entity ai_review_styles {
+    *id
+    review_analysis_id
+    name
+    tone_code
+    is_trendy
+    embedding
+  }
+
+  entity ai_review_hashtags {
+    *id
+    review_analysis_id
+    review_style_id
+    name
+  }
+
+  users ||--o{ ai_review_analysis
+  review_posts ||--o{ ai_review_analysis
+  ai_review_analysis ||--o{ ai_review_styles
+  ai_review_analysis ||--o{ ai_review_hashtags
+  ai_review_styles ||--o{ ai_review_hashtags
+}
+
+' -------------------------------------------------------------
+newpage
+title IMAGE CLUSTER
+' -------------------------------------------------------------
+package "Image Cluster" {
+  entity image_places {
+    *id
+    name
+    lat
+    lng
+    address
+  }
+
+  entity image_search_sessions {
+    *id
+    user_id
+    action_type
+  }
+
+  entity image_search_candidates {
+    *id
+    image_search_place_id
+    place_id
+    is_selected
+  }
+
+  users ||--o{ image_search_sessions
+  image_places ||--o{ image_search_candidates
+  image_search_sessions ||--o{ image_search_candidates
+}
+
+' -------------------------------------------------------------
+newpage
+title HOTEL BOOKING CLUSTER
+' -------------------------------------------------------------
+package "Hotel Cluster" {
+
+  entity hotels {
+    *id
+    external_hotel_id
+    name
+    country_code
+    city
+  }
+
+  entity hotel_rooms {
+    *id
+    hotel_id
+    external_room_type_id
+    name
+  }
+
+  entity hotel_rate_plans {
+    *id
+    hotel_id
+    room_type_id
+    external_rate_plan_id
+    name
+  }
+
+  entity hotel_rate_plan_prices {
+    *id
+    rate_plan_id
+    stay_date
+    price
+  }
+
+  entity hotel_bookings {
+    *id
+    user_id
+    hotel_id
+    room_type_id
+    rate_plan_id
+  }
+
+  entity payment_transactions {
+    *id
+    hotel_booking_id
+    amount
+  }
+
+  hotels ||--o{ hotel_rooms
+  hotel_rooms ||--o{ hotel_rate_plans
+  hotel_rate_plans ||--o{ hotel_rate_plan_prices
+  users ||--o{ hotel_bookings
+  hotel_bookings ||--o{ payment_transactions
+}
+
+' -------------------------------------------------------------
+newpage
+title CHECKLIST CLUSTER
+' -------------------------------------------------------------
+package "Checklist Cluster" {
+  entity checklists {
+    *id
+    user_id
+    day_index
+  }
+
+  entity checklist_items {
+    *id
+    checklist_id
+    category
+    content
+  }
+
+  users ||--o{ checklists
+  checklists ||--o{ checklist_items
+}
+
+' -------------------------------------------------------------
+newpage
+title CHAT MEMORY CLUSTER
+' -------------------------------------------------------------
+package "Chat Memory Cluster" {
+
+  entity chat_memories {
+    *id
+    user_id
+    agent_name
+    order_index
+    content
+  }
+
+  entity chat_memory_vectors {
+    *id
+    user_id
+    agent_name
+    content
+    embedding
+  }
+
+  users ||--o{ chat_memories
+  users ||--o{ chat_memory_vectors
+}
+
+@enduml
