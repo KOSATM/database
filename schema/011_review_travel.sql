@@ -2482,6 +2482,7 @@ CREATE TABLE sns_tokens (
 CREATE TABLE plans (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
+    title VARCHAR(100),
     budget NUMERIC(19,2) NOT NULL,
     start_date DATE,
     end_date DATE,
