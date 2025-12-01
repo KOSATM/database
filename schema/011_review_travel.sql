@@ -676,7 +676,7 @@ ALTER TABLE public.image_places OWNER TO postgres;
 CREATE TABLE public.image_search_candidates (
     id bigint NOT NULL,
     image_search_place_id bigint NOT NULL,
-    place_id bigint NOT NULL,
+    image_place_id bigint NOT NULL,
     is_selected boolean DEFAULT false NOT NULL,
     rank bigint NOT NULL
 );
@@ -811,7 +811,7 @@ ALTER SEQUENCE public.places_id_seq OWNED BY public.image_places.id;
 
 CREATE TABLE public.plan_days (
     id bigint NOT NULL,
-    travel_plan_id bigint,
+    plan_id bigint,
     day_index smallint,
     title character varying(50),
     plan_date date
@@ -1022,7 +1022,7 @@ CREATE TABLE public.review_posts (
     is_posted boolean DEFAULT false NOT NULL,
     review_post_url text,
     created_at timestamp with time zone NOT NULL,
-    travel_plan_id bigint NOT NULL,
+    plan_id bigint NOT NULL,
     review_style_id bigint
 );
 
@@ -1224,18 +1224,12 @@ CREATE SEQUENCE public.travel_places_id_seq1
 
 ALTER SEQUENCE public.travel_places_id_seq1 OWNER TO postgres;
 
---
--- Name: travel_places_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
 
 ALTER SEQUENCE public.travel_places_id_seq1 OWNED BY public.travel_places.id;
 
 
---
--- Name: travel_plan_snapshots_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
 
-CREATE SEQUENCE public.travel_plan_snapshots_id_seq
+CREATE SEQUENCE public.plan_snapshots_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1243,20 +1237,13 @@ CREATE SEQUENCE public.travel_plan_snapshots_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.travel_plan_snapshots_id_seq OWNER TO postgres;
-
---
--- Name: travel_plan_snapshots_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.travel_plan_snapshots_id_seq OWNED BY public.plan_snapshots.id;
+ALTER SEQUENCE public.plan_snapshots_id_seq OWNER TO postgres;
 
 
---
--- Name: travel_plans_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
+ALTER SEQUENCE public.plan_snapshots_id_seq OWNED BY public.plan_snapshots.id;
 
-CREATE SEQUENCE public.travel_plans_id_seq
+
+CREATE SEQUENCE public.plans_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1264,18 +1251,12 @@ CREATE SEQUENCE public.travel_plans_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.travel_plans_id_seq OWNER TO postgres;
-
---
--- Name: travel_plans_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.travel_plans_id_seq OWNED BY public.plans.id;
+ALTER SEQUENCE public.plans_id_seq OWNER TO postgres;
 
 
---
--- Name: user_identities; Type: TABLE; Schema: public; Owner: postgres
---
+ALTER SEQUENCE public.plans_id_seq OWNED BY public.plans.id;
+
+
 
 CREATE TABLE public.user_identities (
     id bigint NOT NULL,
@@ -1414,7 +1395,7 @@ ALTER TABLE ONLY public.hotel_bookings ALTER COLUMN id SET DEFAULT nextval('publ
 -- Name: image_places id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.image_places ALTER COLUMN id SET DEFAULT nextval('public.places_id_seq'::regclass);
+ALTER TABLE ONLY public.image_places ALTER COLUMN id SET DEFAULT nextval('public.image_places_id_seq'::regclass);
 
 
 --
@@ -1442,28 +1423,28 @@ ALTER TABLE ONLY public.payment_transactions ALTER COLUMN id SET DEFAULT nextval
 -- Name: plan_days id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.plan_days ALTER COLUMN id SET DEFAULT nextval('public.travel_days_id_seq'::regclass);
+ALTER TABLE ONLY public.plan_days ALTER COLUMN id SET DEFAULT nextval('public.plan_days_id_seq'::regclass);
 
 
 --
 -- Name: plan_places id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.plan_places ALTER COLUMN id SET DEFAULT nextval('public.travel_places_id_seq'::regclass);
+ALTER TABLE ONLY public.plan_places ALTER COLUMN id SET DEFAULT nextval('public.plan_places_id_seq'::regclass);
 
 
 --
 -- Name: plan_snapshots id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.plan_snapshots ALTER COLUMN id SET DEFAULT nextval('public.travel_plan_snapshots_id_seq'::regclass);
+ALTER TABLE ONLY public.plan_snapshots ALTER COLUMN id SET DEFAULT nextval('public.plan_snapshots_id_seq'::regclass);
 
 
 --
 -- Name: plans id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.plans ALTER COLUMN id SET DEFAULT nextval('public.travel_plans_id_seq'::regclass);
+ALTER TABLE ONLY public.plans ALTER COLUMN id SET DEFAULT nextval('public.plans_id_seq'::regclass);
 
 
 --
@@ -2288,7 +2269,7 @@ ALTER TABLE ONLY public.image_search_sessions
 --
 
 ALTER TABLE ONLY public.image_search_candidates
-    ADD CONSTRAINT fk_image_search_results_place FOREIGN KEY (place_id) REFERENCES public.image_places(id);
+    ADD CONSTRAINT fk_image_search_results_place FOREIGN KEY (image_place_id) REFERENCES public.image_places(id);
 
 
 --
@@ -2328,7 +2309,7 @@ ALTER TABLE ONLY public.review_hashtag_groups
 --
 
 ALTER TABLE ONLY public.review_hashtags
-    ADD CONSTRAINT fk_review_hashtags_group FOREIGN KEY (group_id) REFERENCES public.review_hashtag_groups(id);
+    ADD CONSTRAINT fk_review_hashtags_group FOREIGN KEY (hashtag_group_id) REFERENCES public.review_hashtag_groups(id);
 
 
 --
@@ -2344,7 +2325,7 @@ ALTER TABLE ONLY public.review_photo_groups
 --
 
 ALTER TABLE ONLY public.review_photos
-    ADD CONSTRAINT fk_review_photos_group FOREIGN KEY (group_id) REFERENCES public.review_photo_groups(id);
+    ADD CONSTRAINT fk_review_photos_group FOREIGN KEY (photo_group_id) REFERENCES public.review_photo_groups(id);
 
 
 --
@@ -2352,7 +2333,7 @@ ALTER TABLE ONLY public.review_photos
 --
 
 ALTER TABLE ONLY public.review_posts
-    ADD CONSTRAINT fk_review_posts_plan FOREIGN KEY (travel_plan_id) REFERENCES public.plans(id);
+    ADD CONSTRAINT fk_review_posts_plan FOREIGN KEY (plan_id) REFERENCES public.plans(id);
 
 
 --
@@ -2379,49 +2360,29 @@ ALTER TABLE ONLY public.sns_tokens
     ADD CONSTRAINT fk_sns_tokens_user FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
---
--- Name: plan_days fk_travel_days_plan; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.plan_days
-    ADD CONSTRAINT fk_travel_days_plan FOREIGN KEY (travel_plan_id) REFERENCES public.plans(id);
+    ADD CONSTRAINT fk_plan_days_plan FOREIGN KEY (plan_id) REFERENCES public.plans(id);
 
-
---
--- Name: plan_places fk_travel_places_day; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.plan_places
-    ADD CONSTRAINT fk_travel_places_day FOREIGN KEY (day_id) REFERENCES public.plan_days(id);
+    ADD CONSTRAINT fk_plan_places_day FOREIGN KEY (day_id) REFERENCES public.plan_days(id);
 
-
---
--- Name: plan_snapshots fk_travel_plan_snapshots_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.plan_snapshots
-    ADD CONSTRAINT fk_travel_plan_snapshots_user FOREIGN KEY (user_id) REFERENCES public.users(id);
+    ADD CONSTRAINT fk_plan_snapshots_user FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
---
--- Name: plans fk_travel_plans_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.plans
-    ADD CONSTRAINT fk_travel_plans_user FOREIGN KEY (user_id) REFERENCES public.users(id);
+    ADD CONSTRAINT fk_plans_user FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
---
--- Name: user_identities fk_user_identities_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.user_identities
     ADD CONSTRAINT fk_user_identities_user FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
---
--- Name: travel_places travel_places_category_code_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.travel_places
     ADD CONSTRAINT travel_places_category_code_fkey FOREIGN KEY (category_code) REFERENCES public.travel_place_categories(code);
