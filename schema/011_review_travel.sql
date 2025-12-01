@@ -2569,9 +2569,13 @@ CREATE TABLE review_posts (
     is_posted BOOLEAN DEFAULT false NOT NULL,
     review_post_url TEXT,
     created_at TIMESTAMPTZ NOT NULL,
-    travel_plan_id BIGINT NOT NULL,
+    plan_id BIGINT NOT NULL,
     review_style_id BIGINT,
-    FOREIGN KEY (travel_plan_id) REFERENCES plans(id),
+    photo_group_id BIGINT,
+    hashtag_group_id BIGINT,
+    FOREIGN KEY (plan_id) REFERENCES plans(id),
+    FOREIGN KEY (photo_group_id) REFERENCES photo_groups(id),
+    FOREIGN KEY (hashtag_group_id) REFERENCES hashtag_groups(id),
     FOREIGN KEY (review_style_id) REFERENCES ai_review_styles(id)
 );
 
@@ -2587,8 +2591,8 @@ CREATE TABLE review_photos (
     file_url TEXT NOT NULL,
     order_index INT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
-    group_id BIGINT NOT NULL,
-    FOREIGN KEY (group_id) REFERENCES review_photo_groups(id)
+    photo_group_id BIGINT NOT NULL,
+    FOREIGN KEY (photo_group_id) REFERENCES review_photo_groups(id)
 );
 
 CREATE TABLE review_hashtag_groups (
@@ -2602,12 +2606,11 @@ CREATE TABLE review_hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
-    group_id BIGINT NOT NULL,
-    FOREIGN KEY (group_id) REFERENCES review_hashtag_groups(id)
+    hashtag_group_id BIGINT NOT NULL,
+    FOREIGN KEY (hashtag_group_id) REFERENCES review_hashtag_groups(id)
 );
 CREATE TABLE ai_review_analysis (
     id BIGSERIAL PRIMARY KEY,
-    prompt_text TEXT NOT NULL,
     input_json JSONB NOT NULL,
     output_json JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
@@ -2623,8 +2626,7 @@ CREATE TABLE ai_review_styles (
     created_at TIMESTAMPTZ NOT NULL,
     review_analysis_id BIGINT NOT NULL,
     tone_code VARCHAR(50),
-    is_trendy BOOLEAN DEFAULT false,
-    description TEXT,
+    caption TEXT,
     embedding VECTOR(1536),
     FOREIGN KEY (review_analysis_id) REFERENCES ai_review_analysis(id)
 );
