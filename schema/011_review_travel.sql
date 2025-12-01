@@ -2494,11 +2494,11 @@ CREATE TABLE plans (
 
 CREATE TABLE plan_days (
     id BIGSERIAL PRIMARY KEY,
-    travel_plan_id BIGINT,
+    plan_id BIGINT,
     day_index SMALLINT,
     title VARCHAR(50),
     plan_date DATE,
-    FOREIGN KEY (travel_plan_id) REFERENCES plans(id)
+    FOREIGN KEY (plan_id) REFERENCES plans(id)
 );
 
 CREATE TABLE plan_places (
@@ -2517,11 +2517,11 @@ CREATE TABLE plan_places (
 
 CREATE TABLE current_activities (
     id BIGSERIAL PRIMARY KEY,
-    travel_place_id BIGINT NOT NULL,
+    plan_place_id BIGINT NOT NULL,
     actual_cost NUMERIC(19,2),
     memo TEXT,
     ended_at TIMESTAMPTZ,
-    FOREIGN KEY (travel_place_id) REFERENCES plan_places(id)
+    FOREIGN KEY (plan_place_id) REFERENCES plan_places(id)
 );
 
 CREATE TABLE plan_snapshots (
