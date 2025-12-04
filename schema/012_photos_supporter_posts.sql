@@ -37,6 +37,7 @@ CREATE TABLE user_identities (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     provider VARCHAR(50) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL 
     UNIQUE (user_id, provider)
 );
 
