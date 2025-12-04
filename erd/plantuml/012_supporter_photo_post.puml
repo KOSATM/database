@@ -1,0 +1,334 @@
+@startuml
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+
+' ======================================
+' PAGE 1 — USER & AUTH
+' ======================================
+title USER & AUTH
+
+class users {
+  BIGSERIAL id PK
+  BOOLEAN is_active
+  TIMESTAMPTZ last_login_at
+  VARCHAR(50) name
+  VARCHAR(1000) email
+  VARCHAR(1000) profile_image_url
+  TIMESTAMPTZ created_at
+  TIMESTAMPTZ updated_at
+}
+
+class user_identities {
+  BIGSERIAL id PK
+  BIGINT user_id FK
+  VARCHAR(50) provider
+}
+
+class sns_tokens {
+  BIGSERIAL id PK
+  BIGINT user_id FK
+  TEXT user_access_token
+  TEXT page_access_token
+  TIMESTAMPTZ expires_at
+  VARCHAR(50) account_type
+  VARCHAR(100) ig_business_account
+  VARCHAR(100) creator_account
+  VARCHAR(100) publish_account
+  TIMESTAMPTZ created_at
+}
+
+users ||--o{ user_identities
+users ||--o{ sns_tokens
+
+
+
+' ======================================
+' PAGE 2 — PLANS CLUSTER
+' ======================================
+title PLANS
+
+class plans {
+  BIGSERIAL id PK
+  BIGINT user_id FK
+  VARCHAR(100) title
+  NUMERIC budget
+  DATE start_date
+  DATE end_date
+  TIMESTAMPTZ created_at
+  TIMESTAMPTZ updated_at
+  BOOLEAN is_ended
+}
+
+class plan_days {
+  BIGSERIAL id PK
+  BIGINT plan_id FK
+  SMALLINT day_index
+  VARCHAR(50) title
+  DATE plan_date
+}
+
+class plan_places {
+  BIGSERIAL id PK
+  BIGINT day_id FK
+  VARCHAR(150) title
+  TIMESTAMPTZ start_at
+  TIMESTAMPTZ end_at
+  VARCHAR(64) place_name
+  VARCHAR(200) address
+  NUMERIC lat
+  NUMERIC lng
+  NUMERIC expected_cost
+}
+
+class current_activities {
+  BIGSERIAL id PK
+  BIGINT plan_place_id FK
+  NUMERIC actual_cost
+  TEXT memo
+  TIMESTAMPTZ ended_at
+}
+
+class plan_snapshots {
+  BIGSERIAL id PK
+  BIGINT user_id FK
+  INT version_no
+  JSON snapshot_json
+  TIMESTAMPTZ created_at
+}
+
+users ||--o{ plans
+plans ||--o{ plan_days
+plan_days ||--o{ plan_places
+plan_places ||--o{ current_activities
+users ||--o{ plan_snapshots
+
+
+
+' ======================================
+' PAGE 3 — TRAVEL PLACES (공공데이터)
+' ======================================
+title TRAVEL PLACES
+
+class travel_place_categories {
+  TEXT code PK
+  TEXT name
+  TEXT parent_code
+  INT level
+  TEXT category_type
+}
+
+class travel_places {
+  BIGSERIAL id PK
+  TEXT content_id
+  TEXT title
+  TEXT address
+  TEXT tel
+  TEXT first_image
+  TEXT first_image2
+  DOUBLE lat
+  DOUBLE lng
+  TEXT category_code FK
+  TEXT description
+  JSONB tags
+  VECTOR embedding
+  TIMESTAMPTZ created_at
+  TIMESTAMPTZ updated_at
+  TEXT detail_info
+}
+
+travel_place_categories ||--o{ travel_places
+
+
+
+' ======================================
+' PAGE 4 — IMAGE SEARCH CLUSTER
+' ======================================
+title IMAGE SEARCH
+
+class image_places {
+  BIGSERIAL id PK
+  VARCHAR(255) name
+  VARCHAR(1000) content
+  NUMERIC lat
+  NUMERIC lng
+  VARCHAR(500) address
+  VARCHAR(500) place_type
+  TEXT internal_original_url
+  TEXT internal_thumbnail_url
+  TEXT external_image_url
+  image_status_enum image_status
+}
+
+class image_search_sessions {
+  BIGSERIAL id PK
+  BIGINT user_id FK
+  TIMESTAMPTZ created_at
+  image_action_type_enum action_type
+}
+
+class image_search_candidates {
+  BIGSERIAL id PK
+  BIGINT image_search_place_id FK
+  BIGINT image_place_id FK
+  BOOLEAN is_selected
+  BIGINT rank
+}
+
+users ||--o{ image_search_sessions
+image_search_sessions ||--o{ image_search_candidates
+image_places ||--o{ image_search_candidates
+
+
+
+' ======================================
+' PAGE 5 — REVIEW SYSTEM (Travelgram)
+' ======================================
+title REVIEW POSTS
+
+class review_posts {
+  BIGSERIAL id PK
+  TEXT caption
+  BOOLEAN is_posted
+  TEXT review_post_url
+  TIMESTAMPTZ created_at
+  BIGINT plan_id FK
+  BIGINT review_style_id FK
+  BIGINT photo_group_id FK
+  BIGINT hashtag_group_id FK
+  travel_type_enum travel_type
+  TEXT overall_moods
+}
+
+class review_photo_groups {
+  BIGSERIAL id PK
+  TIMESTAMPTZ created_at
+  BIGINT review_post_id FK
+}
+
+class review_photos {
+  BIGSERIAL id PK
+  TEXT file_url
+  INT order_index
+  TIMESTAMPTZ created_at
+  BIGINT photo_group_id FK
+  TEXT summary
+}
+
+class review_hashtag_groups {
+  BIGSERIAL id PK
+  TIMESTAMPTZ created_at
+  BIGINT review_post_id FK
+}
+
+class review_hashtags {
+  BIGSERIAL id PK
+  VARCHAR(100) name
+  TIMESTAMPTZ created_at
+  BIGINT hashtag_group_id FK
+}
+
+plans ||--o{ review_posts
+review_posts ||--o{ review_photo_groups
+review_posts ||--o{ review_hashtag_groups
+review_photo_groups ||--o{ review_photos
+review_hashtag_groups ||--o{ review_hashtags
+
+
+
+' ======================================
+' PAGE 6 — AI REVIEW SYSTEM
+' ======================================
+title AI REVIEW
+
+class ai_review_analysis {
+  BIGSERIAL id PK
+  JSONB input_json
+  JSONB output_json
+  TIMESTAMPTZ created_at
+  BIGINT review_post_id FK
+}
+
+class ai_review_styles {
+  BIGSERIAL id PK
+  VARCHAR(150) name
+  TIMESTAMPTZ created_at
+  BIGINT review_analysis_id FK
+  VARCHAR(50) tone_code
+  TEXT caption
+  VECTOR embedding
+}
+
+class ai_review_hashtags {
+  BIGSERIAL id PK
+  VARCHAR(100) name
+  TIMESTAMPTZ created_at
+  BIGINT review_analysis_id FK
+  BIGINT review_style_id FK
+}
+
+review_posts ||--o{ ai_review_analysis
+ai_review_analysis ||--o{ ai_review_styles
+ai_review_styles ||--o{ ai_review_hashtags
+
+
+
+' ======================================
+' PAGE 7 — CHECKLIST CLUSTER
+' ======================================
+title CHECKLISTS
+
+class checklists {
+  BIGSERIAL id PK
+  BIGINT user_id FK
+  SMALLINT day_index
+  TIMESTAMPTZ created_at
+}
+
+class checklist_items {
+  BIGSERIAL id PK
+  BIGINT checklist_id FK
+  TEXT content
+  checklist_category_enum category
+  BOOLEAN is_checked
+  TIMESTAMPTZ created_at
+}
+
+users ||--o{ checklists
+checklists ||--o{ checklist_items
+
+
+
+' ======================================
+' PAGE 8 — CHAT MEMORY
+' ======================================
+title CHAT MEMORY & VECTORS
+
+class chat_memories {
+  BIGSERIAL id PK
+  BIGINT user_id FK
+  VARCHAR(50) agent_name
+  INT order_index
+  TEXT content
+  BIGINT token_usage
+  TIMESTAMPTZ created_at
+  VARCHAR(10) role
+}
+
+class chat_memory_vectors {
+  BIGSERIAL id PK
+  BIGINT user_id FK
+  VARCHAR(50) agent_name
+  BIGINT order_index
+  TEXT content
+  BIGINT token_usage
+  TIMESTAMPTZ created_at
+  VARCHAR(10) role
+  VECTOR embedding
+}
+
+users ||--o{ chat_memories
+users ||--o{ chat_memory_vectors
+
+
+@enduml
