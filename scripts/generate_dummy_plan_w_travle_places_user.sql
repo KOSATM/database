@@ -23,7 +23,7 @@ BEGIN
                 user_id, title, budget, start_date, end_date, created_at, updated_at, is_ended
             ) VALUES (
                 u.id,
-                'Random Trip #' || i,
+                null,
                 random_int(500000, 3000000),                         -- 예: 50만원~300만원
                 now() - (day_count + random_int(3,30)) * INTERVAL '1 day',
                 now() - random_int(1, 2) * INTERVAL '1 day',
@@ -58,7 +58,7 @@ BEGIN
 
                     INSERT INTO plan_places (
                         day_id,
-                        title,
+                        null,
                         start_at,
                         end_at,
                         place_name,
