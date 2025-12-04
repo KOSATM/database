@@ -131,11 +131,6 @@ CREATE TABLE travel_places (
     detail_info TEXT,
     UNIQUE (content_id)
 );
-
-CREATE TRIGGER trigger_update_timestamp
-BEFORE UPDATE ON travel_places
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-
 -- Image places
 CREATE TABLE image_places (
     id BIGSERIAL PRIMARY KEY,
