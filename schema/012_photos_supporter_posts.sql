@@ -129,7 +129,7 @@ CREATE TABLE travel_places (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     detail_info TEXT,
-    normalized_category TEXT
+    normalized_category TEXT,
     UNIQUE (content_id)
 );
 -- Image places
@@ -272,7 +272,15 @@ CREATE TABLE chat_memory_vectors (
     role VARCHAR(10) NOT NULL,
     embedding VECTOR(1536)
 );
-
+-- Name: toilets; Type: TABLE
+CREATE TABLE public.toilets (
+    id BIGSERIAL NOT NULL,
+    name character varying(255) NOT NULL,
+    lat numeric(10,7) NOT NULL,
+    lng numeric(10,7) NOT NULL,
+    address character varying(500) NOT NULL
+);
+ALTER TABLE public.toilets OWNER TO postgres;
 
 
 -- Table: public.hotels
@@ -330,9 +338,78 @@ CREATE TABLE IF NOT EXISTS public.hotels
     CONSTRAINT hotels_external_hotel_id_key UNIQUE (external_hotel_id),
     CONSTRAINT chk_hotels_rating_score CHECK (rating_score IS NULL OR rating_score >= 0::numeric AND rating_score <= 10::numeric),
     CONSTRAINT chk_hotels_star_rating CHECK (star_rating IS NULL OR star_rating >= 0::numeric AND star_rating <= 5::numeric)
+);
+
+
+CREATE TABLE payment_transactions (
+    id BIGSERIAL PRIMARY KEY,
+    hotel_booking_id BIGINT NOT NULL,
+    payment_method VARCHAR(30) NOT NULL,
+    provider_payment_id VARCHAR(100),
+    amount NUMERIC(12,2) NOT NULL,
+    currency CHAR(3) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    requested_at TIMESTAMPTZ NOT NULL,
+    completed_at TIMESTAMPTZ,
+    cancelled_at TIMESTAMPTZ,
+    raw_response JSONB,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
+-- Table: public.hotel_rooms
+
+
+
+-- DROP TABLE IF EXISTS public.hotel_rooms;
+
+CREATE TABLE IF NOT EXISTS public.hotel_rooms
+(
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
+    hotel_id bigint NOT NULL,
+    external_room_type_id character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    name character varying(200) COLLATE pg_catalog."default" NOT NULL,
+    name_local character varying(200) COLLATE pg_catalog."default",
+    description text COLLATE pg_catalog."default",
+    max_occupancy integer NOT NULL,
+    adults_max integer,
+    children_max integer,
+    room_size_sqm numeric(5,1),
+    bed_type character varying(50) COLLATE pg_catalog."default",
+    bed_count integer,
+    extra_bed_available boolean NOT NULL DEFAULT false,
+    has_private_bathroom boolean NOT NULL DEFAULT true,
+    has_bathtub boolean NOT NULL DEFAULT false,
+    has_shower_only boolean NOT NULL DEFAULT false,
+    has_kitchenette boolean NOT NULL DEFAULT false,
+    has_washing_machine boolean NOT NULL DEFAULT false,
+    is_smoking_allowed boolean NOT NULL DEFAULT false,
+    is_accessible_room boolean NOT NULL DEFAULT false,
+    connecting_available boolean NOT NULL DEFAULT false,
+    provider_room_meta jsonb,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT hotel_rooms_pkey PRIMARY KEY (id),
+    CONSTRAINT uq_rooms_external UNIQUE (hotel_id, external_room_type_id),
+    CONSTRAINT fk_rooms_hotel FOREIGN KEY (hotel_id)
+        REFERENCES public.hotels (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
 )
 
 TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.hotel_rooms
+    OWNER to postgres;
+-- Index: idx_hotel_rooms_hotel_id
+
+-- DROP INDEX IF EXISTS public.idx_hotel_rooms_hotel_id;
+
+CREATE INDEX IF NOT EXISTS idx_hotel_rooms_hotel_id
+    ON public.hotel_rooms USING btree
+    (hotel_id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
 
 ALTER TABLE IF EXISTS public.hotels
     OWNER to postgres;
