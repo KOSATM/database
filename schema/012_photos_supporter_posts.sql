@@ -6,10 +6,6 @@ CREATE EXTENSION IF NOT EXISTS vector;
 -- =========================================
 -- ENUM TYPES (updated with migration)
 -- =========================================
-DROP TYPE IF EXISTS image_action_type CASCADE;
-DROP TYPE IF EXISTS checklist_category CASCADE;
-DROP TYPE IF EXISTS image_status_enum CASCADE;
-
 DROP TYPE IF EXISTS public.checklist_category_enum CASCADE;
 DROP TYPE IF EXISTS public.image_action_type_enum CASCADE;
 DROP TYPE IF EXISTS public.image_status_enum CASCADE;
