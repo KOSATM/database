@@ -340,13 +340,43 @@ CREATE TABLE IF NOT EXISTS public.hotels
     CONSTRAINT chk_hotels_star_rating CHECK (star_rating IS NULL OR star_rating >= 0::numeric AND star_rating <= 5::numeric)
 );
 
+-- Table: public.hotel_rooms
+CREATE TABLE hotel_bookings (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    -- 양식을 따른 것이므로 id BIGINT를 사용하지 않음
+    external_booking_id VARCHAR(100),
+    hotel_id BIGINT NOT NULL,
+    room_type_id BIGINT NOT NULL,
+    rate_plan_id BIGINT NOT NULL,
+    checkin_date DATE NOT NULL,
+    checkout_date DATE NOT NULL,
+    nights INTEGER NOT NULL,
+    adults_count INTEGER NOT NULL,
+    children_count INTEGER NOT NULL,
+    currency CHAR(3) NOT NULL,
+    total_price NUMERIC(12,2) NOT NULL,
+    tax_amount NUMERIC(12,2) NOT NULL,
+    fee_amount NUMERIC(12,2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    guest_name VARCHAR(200),
+    guest_email VARCHAR(100),
+    guest_phone VARCHAR(50),
+    provider_booking_meta JSONB,
+    booked_at TIMESTAMPTZ NOT NULL,
+    cancelled_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
 
 CREATE TABLE payment_transactions (
     id BIGSERIAL PRIMARY KEY,
     hotel_booking_id BIGINT NOT NULL,
     payment_method VARCHAR(30) NOT NULL,
+    -- 양식을 따른 것이므로 id BIGINT를 사용하지 않음
     provider_payment_id VARCHAR(100),
-    amount NUMERIC(12,2) NOT NULL,
+    amount DECIMAL(19,2) NOT NULL,
     currency CHAR(3) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     requested_at TIMESTAMPTZ NOT NULL,
@@ -356,8 +386,6 @@ CREATE TABLE payment_transactions (
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
 );
--- Table: public.hotel_rooms
-
 
 
 -- DROP TABLE IF EXISTS public.hotel_rooms;
