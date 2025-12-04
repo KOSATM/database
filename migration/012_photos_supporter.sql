@@ -13,8 +13,6 @@ CREATE TYPE public.image_action_type_enum AS ENUM
 CREATE TYPE public.image_status_enum AS ENUM
     ('PENDING', 'READY', 'FAILED');
 
-ALTER TABLE review_photos ADD COLUMN summary TEXT;
-
 -- 1. ENUM 타입 정의
 CREATE TYPE travel_type_enum AS ENUM ('SOLO', 'GROUP', 'UNCLEAR');
 
