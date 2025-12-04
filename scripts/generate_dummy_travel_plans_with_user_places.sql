@@ -52,7 +52,7 @@ BEGIN
                 start_date + (day_count - 1),
                 NOW(),
                 NOW(),
-                FALSE
+                true
             )
             RETURNING id INTO new_plan_id;
 
