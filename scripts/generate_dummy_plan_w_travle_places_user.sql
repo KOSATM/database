@@ -1,3 +1,11 @@
+-- 랜덤 정수 추출 함수
+CREATE OR REPLACE FUNCTION random_int(min INT, max INT)
+RETURNS INT AS $$
+BEGIN
+    RETURN floor(random() * (max - min + 1))::INT + min;
+END;
+$$ LANGUAGE plpgsql;
+
 DO $$
 DECLARE
     u RECORD;
@@ -23,7 +31,7 @@ BEGIN
                 user_id, title, budget, start_date, end_date, created_at, updated_at, is_ended
             ) VALUES (
                 u.id,
-                null,
+                NULL,
                 random_int(500000, 3000000),                         -- 예: 50만원~300만원
                 now() - (day_count + random_int(3,30)) * INTERVAL '1 day',
                 now() - random_int(1, 2) * INTERVAL '1 day',
@@ -58,7 +66,7 @@ BEGIN
 
                     INSERT INTO plan_places (
                         day_id,
-                        null,
+                        title,
                         start_at,
                         end_at,
                         place_name,
